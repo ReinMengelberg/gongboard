@@ -14,13 +14,7 @@ export default defineNuxtConfig({
         ],
     },
 
-    app: {
-        head: {
-            link: [
-                { rel: 'icon', type: 'image/png', href: '~/public/gongboard_fav.png' }
-            ]
-        }
-    },
+// ... existing code ...
 
     modules: [
         'shadcn-nuxt',
@@ -30,7 +24,10 @@ export default defineNuxtConfig({
     ],
 
     colorMode: {
-        classSuffix: ''
+        classSuffix: '',
+        preference: 'system',
+        fallback: 'light',
+        storageKey: 'nuxt-color-mode'
     },
 
     shadcn: {
@@ -46,5 +43,15 @@ export default defineNuxtConfig({
          * @default "@/components/ui"
          */
         componentDir: '@/components/ui'
+    },
+
+    postcss: {
+        plugins: {
+            '@tailwindcss/postcss': {
+                config: {
+                    darkMode: 'selector'
+                }
+            }
+        }
     }
 })
