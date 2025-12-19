@@ -9,7 +9,7 @@ definePageMeta({
 </script>
 
 <template>
-  <Card class="relative w-[80vw] mx-auto p-4">
+  <Card class="relative w-[60vw] mx-auto p-4">
     <CardHeader>
       <div class="flex items-center gap-2">
         <Button variant="ghost" size="icon" class="-ml-2" @click="navigateTo('/app/home')" aria-label="Go back">
@@ -18,16 +18,19 @@ definePageMeta({
         <CardTitle>Admin Interface</CardTitle>
       </div>
     </CardHeader>
-    <CardContent class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <CardContent>
 
-      <NuxtLink to="/app/admin/users" class="group">
-        <Card class="h-full transition-colors group-hover:border-primary">
-          <div class="flex items-start gap-4 p-6">
-            <i class="ri-team-line text-2xl text-muted-foreground group-hover:text-primary" aria-hidden="true" />
-            <div>
-              <h3 class="font-medium">Users</h3>
-              <p class="text-sm text-muted-foreground">Manage users and roles</p>
+      <NuxtLink to="/app/admin/users" class="group block">
+        <Card class="h-full transition-all duration-200 group-hover:border-primary/50 group-hover:bg-accent/50 group-hover:shadow-md">
+          <div class="flex items-center gap-4 p-6">
+            <div class="flex h-12 w-12 items-center justify-center rounded-lg border bg-background transition-colors group-hover:text-primary">
+              <i class="ri-team-line text-2xl" aria-hidden="true" />
             </div>
+            <div class="flex-1">
+              <h3 class="font-semibold leading-none tracking-tight">Users</h3>
+              <p class="mt-1 text-sm text-muted-foreground">Manage users and permissions</p>
+            </div>
+            <i class="ri-arrow-right-s-line text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" aria-hidden="true" />
           </div>
         </Card>
       </NuxtLink>

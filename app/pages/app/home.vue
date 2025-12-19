@@ -13,17 +13,17 @@ const auth = useAuthStore()
 </script>
 
 <template>
-  <Card class="relative mx-auto w-[800px]">
-    <CardHeader class="flex flex-col items-center gap-2">
-      <img src="../../public/gongboard.png" alt="Logo" class="h-24 w-120" />
-      <CardTitle class="text-center">
+  <Card class="relative mx-auto w-[80vw] h-[80vh]">
+    <CardHeader class="flex flex-col items-center gap-6">
+      <img src="../../public/gongboard.png" alt="Logo" class="h-20 w-120" />
+      <CardTitle class="text-center text-gray-600 text-3xl font-medium">
         Welcome back<span v-if="auth.user?.name">, {{ auth.user.name }}</span>
       </CardTitle>
     </CardHeader>
 
 
 
-    <CardContent>
+    <CardContent class="h-full">
       LETSGO!
     </CardContent>
 

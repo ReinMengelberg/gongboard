@@ -168,7 +168,7 @@ async function submitPasswordChange() {
 
 <template>
   <div class="p-4">
-    <Card class="w-[800px] mx-auto">
+    <Card class="w-[60vw] mx-auto">
       <CardHeader>
         <div class="flex items-center gap-2">
           <Button variant="ghost" size="icon" class="-ml-2" @click="navigateTo('/app/home')" aria-label="Go back">
