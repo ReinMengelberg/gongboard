@@ -1,7 +1,7 @@
 import {prisma} from '~~/server/db/prisma'
 import type {PrismaClient} from '@prisma/client'
 
-export abstract class BaseModel {
+export abstract class Model {
     protected static modelName: string
 
     protected static getModel() {

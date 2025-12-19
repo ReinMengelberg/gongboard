@@ -21,8 +21,8 @@ model User {
   admin    Boolean @default(false)
   password String
 
-  avatar String?
-  sound  String?
+  avatar Json?
+  sound  Json?
   drop   Int?
 
   verified_at DateTime?
