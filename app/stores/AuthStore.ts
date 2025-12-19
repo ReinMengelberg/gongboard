@@ -44,6 +44,7 @@ export const useAuthStore = defineStore('auth', {
                     navigateTo('/app/home')
                     return true
                 }
+                return false
             } catch (error: any) {
                 this.error = error.message
                 return ErrorService.returnFalse(error, error?.message || 'Login failed.')
@@ -83,6 +84,7 @@ export const useAuthStore = defineStore('auth', {
                     navigateTo('/auth/login')
                     return true
                 }
+                return false
             } catch (error: any) {
                 this.error = error.message
                 return ErrorService.returnFalse(error, error?.message || 'Logout failed.')
