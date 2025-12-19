@@ -22,7 +22,16 @@ export default defineNuxtConfig({
         }
     },
 
-    modules: ['shadcn-nuxt', 'nuxt-auth-utils', '@pinia/nuxt'],
+    modules: [
+        'shadcn-nuxt',
+        'nuxt-auth-utils',
+        '@pinia/nuxt',
+        '@nuxtjs/color-mode',
+    ],
+
+    colorMode: {
+        classSuffix: ''
+    },
 
     shadcn: {
         /**

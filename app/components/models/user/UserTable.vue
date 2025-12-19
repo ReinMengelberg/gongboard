@@ -6,14 +6,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  TableAction,
   TableEmpty,
+} from '~/components/ui/table';
+import {
+  TableAction,
   TableSkeleton
 } from '~/components/base/table';
 import {Avatar, AvatarImage, AvatarFallback} from "~/components/ui/avatar";
 import {useUserStore} from "@/stores/UserStore";
 import {useAuthStore} from "~/stores/AuthStore";
-import type {User} from "~/src/types/models/user";
+import type {User} from "~~/types/models/user";
 import ConfirmationDialog from "@/components/utils/dialog/ConfirmationDialog.vue";
 import DeleteDialog from "@/components/utils/dialog/DeleteDialog.vue";
 import EmptyState from "~/components/utils/EmptyState.vue";
@@ -67,7 +69,7 @@ const handleSelect = (user: User) => {
 <template>
   <ScrollArea
       :class="props.class"
-      class="rounded-lg border"
+      class="rounded-md border bg-background"
   >
     <Table>
       <TableHeader>
@@ -99,21 +101,25 @@ const handleSelect = (user: User) => {
         <TableRow
             v-for="user in props.users.list?.data"
             :key="user.email"
-            :class="cn('cursor-pointer transition-all duration-200 ease-in-out hover:bg-sky-100 dark:hover:bg-sky-800 text-gray-700 dark:text-gray-300 !border-t-0 !border-l-4 !border-white', props.selected?.id === user.id && 'bg-blue-100 text-blue-600 dark:bg-blue-800/30 dark:text-blue-300 !border-b-0 !border-l-4 !border-blue-500')"
+            :class="cn(
+                'cursor-pointer transition-colors hover:bg-muted/50 data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground',
+                props.selected?.id === user.id && 'bg-accent text-accent-foreground'
+            )"
+            :data-selected="props.selected?.id === user.id"
             @click="props.view === 'arrow' ? handleSelect(user) : undefined"
         >
           <!-- User Column -->
           <TableCell>
             <div class="flex items-center gap-x-3">
-              <Avatar class="h-12 w-12 flex-shrink-0 rounded-full bg-gray-50 ring-1 ring-gray-200">
+              <Avatar class="h-10 w-10 flex-shrink-0 rounded-full border border-border">
                 <AvatarImage :src="user.avatar?.temp_url"/>
-                <AvatarFallback class="text-base font-medium">
+                <AvatarFallback class="bg-muted text-sm font-medium">
                   {{ user.name.split(' ').map((n: string) => n.charAt(0)).join('').toUpperCase() }}
                 </AvatarFallback>
               </Avatar>
               <div class="min-w-0 flex-1">
-                <div class="flex users-center gap-2">
-                  <p class="text-sm font-semibold text-gray-900 truncate">
+                <div class="flex items-center gap-2">
+                  <p class="text-sm font-semibold text-foreground truncate">
                     {{ user.name }}
                   </p>
                   <!-- You Badge -->
@@ -121,8 +127,8 @@ const handleSelect = (user: User) => {
                     <span>You</span>
                   </Badge>
                 </div>
-                <p class="mt-1 text-xs text-gray-500 truncate">
-                  <a :href="`mailto:${user.email}`" class="hover:text-blue-600">
+                <p class="text-xs text-muted-foreground truncate">
+                  <a :href="`mailto:${user.email}`" class="hover:text-primary transition-colors">
                     {{ user.email }}
                   </a>
                 </p>
