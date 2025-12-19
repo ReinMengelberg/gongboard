@@ -1,0 +1,44 @@
+import { z } from 'zod'
+import { ApiResponse } from "~~/server/utils/ApiResponse";
+import { UserRepository } from "~~/server/db/UserRepository";
+import unauthenticated from "~~/server/middleware/unauthenticated";
+import { compare } from 'bcryptjs'
+
+const bodySchema = z.object({
+    email: z.email(),
+    password: z.string().min(8),
+})
+
+export default eventHandler({
+    onRequest: [unauthenticated],
+    handler: async (event) => {
+        const { email, password } = await readValidatedBody(event, bodySchema.parse)
+
+        // Find user in DB
+        const user = await UserRepository.findByEmail(email)
+
+        // If no user or password mismatch -> 401
+        if (!user) {
+            return ApiResponse.error(401, 'Invalid credentials')
+        }
+
+        const passwordMatches = compare(password, user.password)
+        if (!passwordMatches) {
+            return ApiResponse.error(401, 'Invalid credentials')
+        }
+
+        // Establish a session with Auth utils
+        await setUserSession(event, {
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                admin: user.admin,
+            },
+            extendedAt: Date.now(),
+        })
+
+        return ApiResponse.success('Logged in successfully')
+    },
+})
+

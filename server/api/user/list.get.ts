@@ -1,7 +1,7 @@
-import { ApiResponse } from "~/server/utils/ApiResponse";
-import admin from "~/server/middleware/admin";
-import { UserRepository } from "~/server/db/UserRepository";
-import type { Prisma } from "~/generated/prisma";
+import { ApiResponse } from "~~/server/utils/ApiResponse";
+import admin from "~~/server/middleware/admin";
+import { UserRepository } from "~~/server/db/UserRepository";
+import type { Prisma } from "~~/generated/prisma";
 
 export default eventHandler({
   onRequest: [admin],

@@ -1,4 +1,4 @@
-import type { PaginatedData } from '@/src/types/api/PaginatedData'
+import type { PaginatedData } from '~~/src/types/api/PaginatedData'
 
 /**
  * Generic in-memory paginator for arrays.
