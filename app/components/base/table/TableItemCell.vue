@@ -20,8 +20,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 <template>
   <div class="flex items-center gap-x-3 w-full break-all">
-    <div class="flex items-center justify-center w-12 h-12 rounded-full flex-shrink-0" :class="iconBgColor">
-      <i v-if="icon" class="text-2xl" :class="[icon, iconClass || 'text-white']"/>
+    <div class="flex items-center justify-center w-14 h-14 rounded-full flex-shrink-0" :class="iconBgColor">
+      <i v-if="icon" class="text-3xl" :class="[icon, iconClass || 'text-white']"/>
       <i v-else class="text-2xl" :class="[defaultIcon, iconClass || 'text-white']"/>
     </div>
     <div class="min-w-0 flex-1">

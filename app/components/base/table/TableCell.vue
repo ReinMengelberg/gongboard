@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<TableCellProps>(), {
 </script>
 
 <template>
-  <td :class="`px-3 py-5 text-sm text-gray-500 break-all ${props.class}`">
+  <td :class="`px-2 py-2 text-sm text-gray-500 break-all ${props.class}`">
     <slot />
   </td>
 </template>

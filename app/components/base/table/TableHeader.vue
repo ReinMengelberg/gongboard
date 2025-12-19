@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<TableHeaderProps>(), {
 </script>
 
 <template>
-  <thead :class="props.class" class="border-b border-t">
+  <thead :class="props.class" class="border-b border-gray-200">
     <slot />
   </thead>
 </template>

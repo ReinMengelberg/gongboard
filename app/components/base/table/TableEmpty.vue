@@ -19,7 +19,9 @@ const delegatedProps = computed(() => {
 </script>
 
 <template>
-  <TableRow>
+  <TableRow
+    class="h-full"
+  >
     <TableCell
         :colspan="colspan"
         :class="
@@ -30,7 +32,7 @@ const delegatedProps = computed(() => {
       "
         v-bind="delegatedProps"
     >
-      <div class="flex items-center justify-center h-full">
+      <div class="flex items-center justify-center max-h-full py-24">
         <slot />
       </div>
     </TableCell>

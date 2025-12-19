@@ -9,9 +9,7 @@ const props = withDefaults(defineProps<TableProps>(), {
 </script>
 
 <template>
-  <div class="bg-white shadow-sm rounded-lg overflow-hidden">
-    <table :class="`min-w-full divide-y divide-gray-300 ${props.class}`">
-      <slot />
-    </table>
-  </div>
+  <table :class="`w-full min-w-full divide-y divide-gray-300 bg-white ${props.class}`">
+    <slot />
+  </table>
 </template>
