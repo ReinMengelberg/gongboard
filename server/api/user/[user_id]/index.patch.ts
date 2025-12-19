@@ -1,8 +1,7 @@
 import { z } from 'zod'
 import { ApiResponse } from "~~/server/http/ApiResponse";
-import { UserRepository } from "~~/server/db/UserRepository";
+import { User } from "~~/server/models/User";
 import authenticated from "~~/server/http/middleware/authenticated";
-import { hash } from 'bcryptjs'
 
 const bodySchema = z.object({
     name: z.string().min(1).optional(),
@@ -57,8 +56,8 @@ export default eventHandler({
             if (body.new_password !== confirm) {
                 return ApiResponse.error(400, 'New passwords do not match')
             }
-            // No requirement for current password here (per previous behavior)
-            data.password = await hash(body.new_password, 12)
+            // Hash password using Laravel-style method
+            data.password = await User.hashPassword(body.new_password)
         }
 
         // Remove transient fields so they are not persisted
@@ -68,15 +67,20 @@ export default eventHandler({
         delete (data as any).confirm_password
 
         try {
-            const user = await UserRepository.update(id, data)
-            const { password: _pw, ...safe } = user as any
-            return ApiResponse.success(safe, 'User updated')
-        } catch (e: any) {
-            const msg = (e?.message || '').toLowerCase()
-            if (msg.includes('not found')) {
+            // Check if user exists
+            const existingUser = await User.find(id)
+            if (!existingUser) {
                 return ApiResponse.error(404, 'User not found')
             }
-            if (msg.includes('already exists')) {
+
+            // Update user using Laravel-style method
+            const user = await User.update(id, data)
+
+            // Return user without password
+            return ApiResponse.success(User.toPublic(user), 'User updated')
+        } catch (e: any) {
+            const msg = (e?.message || '').toLowerCase()
+            if (msg.includes('unique constraint')) {
                 return ApiResponse.error(409, 'A user with the provided unique field already exists.')
             }
             return ApiResponse.error(400, 'Failed to update user')

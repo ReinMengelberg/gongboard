@@ -1,6 +1,6 @@
 import { ApiResponse } from "~~/server/http/ApiResponse";
 import admin from "~~/server/http/middleware/admin";
-import { UserRepository } from "~~/server/db/UserRepository";
+import { User } from "~~/server/models/User";
 
 export default eventHandler({
   onRequest: [admin],
@@ -12,12 +12,13 @@ export default eventHandler({
       return ApiResponse.error(400, 'Invalid user id')
     }
 
-    const user = await UserRepository.findById(id)
+    // Find user using Laravel-style method
+    const user = await User.find(id)
     if (!user) {
       return ApiResponse.error(404, 'User not found')
     }
 
-    const { password, ...safe } = user as any
-    return ApiResponse.success(safe)
+    // Return user without password
+    return ApiResponse.success(User.toPublic(user))
   },
 })

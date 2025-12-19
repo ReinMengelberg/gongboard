@@ -1,6 +1,6 @@
 import { ApiResponse } from "~~/server/http/ApiResponse";
 import admin from "~~/server/http/middleware/admin";
-import { UserRepository } from "~~/server/db/UserRepository";
+import { User } from "~~/server/models/User";
 
 export default eventHandler({
   onRequest: [admin],
@@ -9,7 +9,7 @@ export default eventHandler({
 
     // Support both ?search= and legacy ?q=
     const rawSearch = typeof query.search === 'string' ? query.search : (typeof query.q === 'string' ? query.q : undefined);
-    const q = rawSearch ? rawSearch.trim() : undefined;
+    const search = rawSearch ? rawSearch.trim() : undefined;
 
     // Pagination
     const rawPerPage = query.per_page ? Number(query.per_page) : undefined;
@@ -21,8 +21,6 @@ export default eventHandler({
 
     const perPage = rawPerPage !== undefined ? Math.min(Math.max(Math.floor(rawPerPage), 1), 100) : 25;
     const page = rawPage !== undefined ? Math.max(Math.floor(rawPage), 1) : 1;
-    const skip = (page - 1) * perPage;
-    const take = perPage;
 
     // Admin filter (?admin=true|false)
     let adminFilter: boolean | undefined;
@@ -50,34 +48,58 @@ export default eventHandler({
       resourceTokens = rawResourceParam.split(',');
     }
 
-    const filters = {
-      search: q,
-      admin: adminFilter,
-      resourceIds: resourceTokens.map(t => t.trim()).filter(Boolean),
-    };
+    // Build the query
+    let userQuery = User.query();
 
-    const [users, total] = await Promise.all([
-      UserRepository.list({ skip, take, filters }),
-      UserRepository.count(filters),
-    ]);
+    // Apply search filter
+    if (search) {
+      userQuery = userQuery.where({
+        OR: [
+          { name: { contains: search } },
+          { email: { contains: search } }
+        ]
+      });
+    }
 
-    const safeUsers = users.map((u: any) => {
-      const { password, ...rest } = u;
-      return rest;
-    });
+    // Apply admin filter
+    if (adminFilter !== undefined) {
+      userQuery = userQuery.where({ admin: adminFilter });
+    }
 
-    const last_page = Math.max(1, Math.ceil(total / perPage));
-    const from = total === 0 ? null : skip + 1;
-    const to = total === 0 ? null : Math.min(skip + safeUsers.length, total);
+    // Apply resource_id filters
+    if (resourceTokens.length > 0) {
+      const includes: number[] = [];
+      const excludes: number[] = [];
+
+      for (const token of resourceTokens.map(t => t.trim()).filter(Boolean)) {
+        if (token.startsWith('!')) {
+          const id = parseInt(token.substring(1));
+          if (!isNaN(id)) excludes.push(id);
+        } else {
+          const id = parseInt(token);
+          if (!isNaN(id)) includes.push(id);
+        }
+      }
+
+      if (includes.length > 0) {
+        userQuery = userQuery.where({ id: { in: includes } });
+      }
+      if (excludes.length > 0) {
+        userQuery = userQuery.where({ id: { notIn: excludes } });
+      }
+    }
+
+    // Apply ordering and paginate
+    const result = await userQuery
+        .orderBy({ created_at: 'desc' })
+        .paginate({ page, perPage });
+
+    // Remove passwords from response
+    const safeUsers = result.data.map((user: any) => User.toPublic(user));
 
     return ApiResponse.success({
-      current_page: page,
-      data: safeUsers,
-      last_page,
-      per_page: perPage,
-      from,
-      to,
-      total,
+      ...result,
+      data: safeUsers
     });
   },
 });
