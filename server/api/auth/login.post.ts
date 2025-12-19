@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { ApiResponse } from "~~/server/utils/ApiResponse";
 import { UserRepository } from "~~/server/db/UserRepository";
-import unauthenticated from "~~/server/middleware/unauthenticated";
+import unauthenticated from "~~/server/utils/middleware/unauthenticated";
 import { compare } from 'bcryptjs'
 
 const bodySchema = z.object({

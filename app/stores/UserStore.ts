@@ -6,8 +6,8 @@ import UserService, {
     type UpdateUserRequest,
     type UserFilters
 } from '../services/api/UserService'
-import type {User} from '@/src/types/models/user'
-import type {PaginatedData} from '@/src/types/api/PaginatedData'
+import type {User} from '~~/src/types/models/user'
+import type {PaginatedData} from '~~/src/types/api/PaginatedData'
 import {useAuthStore} from './AuthStore'
 
 // Lazy service instance

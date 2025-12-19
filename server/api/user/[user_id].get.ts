@@ -1,5 +1,5 @@
 import { ApiResponse } from "~~/server/utils/ApiResponse";
-import admin from "~~/server/middleware/admin";
+import admin from "~~/server/utils/middleware/admin";
 import { UserRepository } from "~~/server/db/UserRepository";
 
 export default eventHandler({

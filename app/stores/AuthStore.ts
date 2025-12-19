@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
 import AuthService, {type LoginRequest} from '../services/api/AuthService'
-import type {User} from "~/src/types/models/user";
+import type {User} from "~~/src/types/models/user";
 import NotificationService from '../services/utils/NotificationService'
 import ErrorService from '../services/utils/ErrorService'
 
@@ -47,6 +47,7 @@ export const useAuthStore = defineStore('auth', {
                 return false
             } catch (error: any) {
                 this.error = error.message
+                console.log('FAILED TO LOGIN', error)
                 return ErrorService.returnFalse(error, error?.message || 'Login failed.')
             } finally {
                 this.loading = false
