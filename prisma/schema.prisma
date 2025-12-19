@@ -5,8 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -15,108 +14,108 @@ datasource db {
 }
 
 model User {
-  id           Int          @id @default(autoincrement())
-  name         String
-  email        String       @unique
-  admin        Boolean      @default(false)
-  password     String
-  verified_at  DateTime?
-  created_at   DateTime     @default(now())
-  updated_at   DateTime     @updatedAt
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String    @unique
+  admin       Boolean   @default(false)
+  password    String
+  verified_at DateTime?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
 
   // Relations
-  phone_calls  NoResponse[]
-  leads        Lead[]
-  meetings     Meeting[]
-  sales        Sale[]
-  losts        Lost[]
+  phone_calls NoResponse[]
+  leads       Lead[]
+  meetings    Meeting[]
+  sales       Sale[]
+  losts       Lost[]
 }
 
 model Lead {
-  id          Int       @id @default(autoincrement())
-  external_id String    @unique
+  id          Int    @id @default(autoincrement())
+  external_id String @unique
   name        String
   company     String
 
   // Relations
   user_id Int
-  user    User     @relation(fields: [user_id], references: [id])
+  user    User @relation(fields: [user_id], references: [id])
 
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@index([user_id])
 }
 
 model Meeting {
-  id          Int       @id @default(autoincrement())
-  external_id String    @unique
+  id          Int      @id @default(autoincrement())
+  external_id String   @unique
   name        String
   company     String
   date        DateTime
 
   // Relations
   user_id Int
-  user    User     @relation(fields: [user_id], references: [id])
+  user    User   @relation(fields: [user_id], references: [id])
   sales   Sale[]
 
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@index([user_id])
 }
 
 model Sale {
-  id          Int        @id @default(autoincrement())
-  external_id String     @unique
+  id          Int      @id @default(autoincrement())
+  external_id String   @unique
   name        String?
   company     String
   date        DateTime
 
   // Relations
   meeting_id Int
-  meeting    Meeting   @relation(fields: [meeting_id], references: [id])
+  meeting    Meeting @relation(fields: [meeting_id], references: [id])
 
   user_id Int
-  user    User      @relation(fields: [user_id], references: [id])
+  user    User @relation(fields: [user_id], references: [id])
 
-  created_at DateTime   @default(now())
-  updated_at DateTime   @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@index([meeting_id])
   @@index([user_id])
 }
 
 model Lost {
-  id          Int       @id @default(autoincrement())
-  external_id String    @unique
+  id          Int    @id @default(autoincrement())
+  external_id String @unique
   name        String
   company     String
   reason      String
 
   // Relations
   user_id Int
-  user    User     @relation(fields: [user_id], references: [id])
+  user    User @relation(fields: [user_id], references: [id])
 
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@index([user_id])
 }
 
 model NoResponse {
-  id          Int       @id @default(autoincrement())
-  external_id String    @unique
+  id          Int      @id @default(autoincrement())
+  external_id String   @unique
   name        String
   company     String
   date        DateTime
 
   // Relations
   user_id Int
-  user    User     @relation(fields: [user_id], references: [id])
+  user    User @relation(fields: [user_id], references: [id])
 
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@index([user_id])
 }

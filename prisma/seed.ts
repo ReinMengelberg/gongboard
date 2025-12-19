@@ -1,5 +1,6 @@
-import { PrismaClient } from '../app/generated/prisma'
-import bcrypt from 'bcryptjs'
+import 'dotenv/config'
+import { PrismaClient } from '@prisma/client'
+import { hash } from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
@@ -11,7 +12,7 @@ async function main() {
         throw new Error('Missing ADMIN_EMAIL or ADMIN_PASSWORD environment variables.')
     }
 
-    const hashedPassword = await bcrypt.hash(adminPassword, 10)
+    const hashedPassword = await hash(adminPassword, 10)
 
     console.log(`Seeding admin user: ${adminEmail}...`)
 

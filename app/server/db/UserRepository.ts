@@ -1,5 +1,5 @@
 import prisma from "./Connection";
-import { Prisma, User } from "@prisma/client";
+import { Prisma, type User } from "@prisma/client";
 
 export type CreateUserData = Omit<Prisma.UserUncheckedCreateInput,
     "id" | "created_at" | "updated_at"
