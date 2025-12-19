@@ -18,8 +18,8 @@ function toggleDarkMode(checked: boolean) {
 
       <Switch
           id="dark-mode"
-          :checked="isDark"
-          @update:modelValue="toggleDarkMode"
+          :model-value="isDark"
+          @update:model-value="toggleDarkMode"
       />
 
       <i class="ri-moon-line text-muted-foreground" :class="{ 'text-foreground': isDark }" />
