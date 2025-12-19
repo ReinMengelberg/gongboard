@@ -7,8 +7,9 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    admin: boolean;
     password: string;
+    admin: boolean;
+    avatar: string;
     verified_at: string;
     created_at: string;
     updated_at: string;
@@ -25,6 +26,7 @@ declare module '#auth-utils' {
         name: string;
         email: string;
         admin: boolean;
+        avatar: string;
         verified_at: string;
         created_at: string;
         updated_at: string;

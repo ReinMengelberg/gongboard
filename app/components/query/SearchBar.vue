@@ -328,7 +328,7 @@ function hasOptions(type: string): boolean {
       <!-- Search input -->
       <div class="relative flex-grow">
         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-          <i class="ri-search-line ri-md text-gray-400"></i>
+          <i class="ri-search-line ri-md"></i>
         </div>
 
         <Input
@@ -336,17 +336,16 @@ function hasOptions(type: string): boolean {
             :model-value="store.search || ''"
             @update:model-value="onSearchInput"
             :placeholder="searchPlaceholder"
-            class="block h-10 w-full rounded-md py-2 pl-10 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 sm:text-sm sm:leading-6 shadow-sm"
+            class="block h-10 w-full rounded-md py-2 pl-10 pr-10 ring-1 ring-inset sm:text-sm sm:leading-6 shadow-sm"
         />
 
-        <Button
+        <button
             v-if="store.search"
-            variant="ghost"
             @click.prevent="clearSearch"
             class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
         >
           <i class="ri-close-circle-line text-gray-400 hover:text-gray-500"></i>
-        </Button>
+        </button>
       </div>
 
       <!-- Sort controls -->

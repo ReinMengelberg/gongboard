@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Button } from '@/components/ui/button';
 
 // Define prop types
 interface Props {
@@ -24,10 +25,10 @@ const paginationData = computed(() => {
 // Extract pagination details
 const currentPage = computed(() => paginationData.value?.current_page || 1);
 const lastPage = computed(() => paginationData.value?.last_page || 1);
-const hasPreviousPage = computed(() => currentPage.value > 1);
-const hasNextPage = computed(() => currentPage.value < lastPage.value);
-const from = computed(() => paginationData.value?.from ?? 0);
-const to = computed(() => paginationData.value?.to ?? 0);
+const hasPreviousPage = computed(() => !!paginationData.value?.prev_page_url);
+const hasNextPage = computed(() => !!paginationData.value?.next_page_url);
+const from = computed(() => paginationData.value?.from || 0);
+const to = computed(() => paginationData.value?.to || 0);
 const total = computed(() => paginationData.value?.total || 0);
 
 /**
@@ -82,77 +83,114 @@ const changePage = (page: number) => {
 </script>
 
 <template>
-  <div>
-    <!-- Results count info -->
-    <div class="sm:flex sm:flex-1 sm:items-center -mt-4 sm:justify-between mb-2">
-      <div>
-        <p class="text-xs text-gray-700">
-          Showing <span class="font-medium">{{ from }}</span> to
-          <span class="font-medium">{{ to }}</span> of
-          <span class="font-medium">{{ total }}</span> results
-        </p>
-      </div>
+  <nav class="flex items-center justify-between px-2 pt-2" aria-label="Pagination">
+    <!-- Results count (hidden on mobile) -->
+    <div class="hidden sm:block">
+      <p class="text-xs text-gray-700">
+        Showing
+        {{ ' ' }}
+        <span class="font-medium">{{ from }}</span>
+        {{ ' ' }}
+        to
+        {{ ' ' }}
+        <span class="font-medium">{{ to }}</span>
+        {{ ' ' }}
+        of
+        {{ ' ' }}
+        <span class="font-medium">{{ total }}</span>
+        {{ ' ' }}
+        results
+      </p>
     </div>
 
-    <!-- Pagination navigation -->
-    <nav class="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
-      <div class="-mt-px flex w-0 flex-1">
-        <button
-            @click.prevent="changePage(currentPage - 1)"
-            :disabled="!hasPreviousPage"
-            :class="[
-            'inline-flex items-center border-t-2 pr-1 pt-4 text-sm font-medium',
-            hasPreviousPage
-              ? 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-              : 'border-transparent text-gray-300 cursor-not-allowed'
-          ]"
-        >
-          <i class="ri-arrow-left-s-line mr-1"></i>
-          Previous
-        </button>
-      </div>
+    <!-- Mobile: Simple Previous/Next -->
+    <div class="flex flex-1 justify-between sm:hidden">
+      <Button
+          variant="outline"
+          size="sm"
+          @click.prevent="changePage(currentPage - 1)"
+          :disabled="!hasPreviousPage"
+      >
+        Previous
+      </Button>
+      <Button
+          variant="outline"
+          size="sm"
+          @click.prevent="changePage(currentPage + 1)"
+          :disabled="!hasNextPage"
+      >
+        Next
+      </Button>
+    </div>
 
-      <div class="hidden md:-mt-px md:flex">
+    <!-- Desktop: Previous/Next buttons + Page numbers with first/last navigation -->
+    <div class="hidden sm:flex sm:items-center sm:gap-2">
+      <!-- Page Numbers Navigation -->
+      <div class="inline-flex gap-1 rounded-md shadow-sm">
+        <!-- First Page Button -->
+        <Button
+            variant="outline"
+            class="w-8 h-8"
+            @click.prevent="changePage(1)"
+            :disabled="currentPage === 1"
+        >
+          <span class="sr-only">First page</span>
+          <i class="ri-arrow-left-double-line text-lg"></i>
+        </Button>
+
+        <!-- Page Numbers -->
         <template v-for="page in visiblePageNumbers" :key="page">
-          <button
+          <Button
               v-if="page !== '...'"
               @click.prevent="changePage(page)"
-              :class="[
-              'inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium',
-              page === currentPage
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-            ]"
+              class="w-8 h-8"
+              :variant="currentPage === page ? 'default' : 'outline'"
+              :disabled="page === currentPage"
               :aria-current="page === currentPage ? 'page' : undefined"
           >
             {{ page }}
-          </button>
-          <span
+          </Button>
+          <Button
               v-else
-              class="inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500"
+              :disabled="true"
+              class="w-8 h-8"
+              variant="outline"
           >
             ...
-          </span>
+          </Button>
         </template>
+
+        <!-- Last Page Button -->
+        <Button
+            variant="outline"
+            @click.prevent="changePage(lastPage)"
+            :disabled="currentPage === lastPage"
+            class="w-8 h-8"
+        >
+          <span class="sr-only">Last page</span>
+          <i class="ri-arrow-right-double-line text-lg"></i>
+        </Button>
       </div>
 
-      <div class="-mt-px flex w-0 flex-1 justify-end">
-        <button
-            @click.prevent="changePage(currentPage + 1)"
-            :disabled="!hasNextPage"
-            :class="[
-            'inline-flex items-center border-t-2 pl-1 pt-4 text-sm font-medium',
-            hasNextPage
-              ? 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-              : 'border-transparent text-gray-300 cursor-not-allowed'
-          ]"
-        >
-          Next
-          <i class="ri-arrow-right-s-line ml-1"></i>
-        </button>
-      </div>
-    </nav>
-  </div>
+      <!-- Previous/Next Buttons -->
+      <Button
+          variant="outline"
+          size="sm"
+          @click.prevent="changePage(currentPage - 1)"
+          :disabled="!hasPreviousPage"
+      >
+        Previous
+      </Button>
+      <Button
+          variant="outline"
+          size="sm"
+          @click.prevent="changePage(currentPage + 1)"
+          :disabled="!hasNextPage"
+      >
+        Next
+      </Button>
+    </div>
+  </nav>
 </template>
 
 <style scoped>

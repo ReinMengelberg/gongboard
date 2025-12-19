@@ -111,7 +111,7 @@ const handleSelect = (user: User) => {
           <!-- User Column -->
           <TableCell>
             <div class="flex items-center gap-x-3">
-              <Avatar class="h-10 w-10 flex-shrink-0 rounded-full border border-border">
+              <Avatar class="h-14 w-14 flex-shrink-0 rounded-full border border-border">
                 <AvatarImage :src="user.avatar?.temp_url"/>
                 <AvatarFallback class="bg-muted text-sm font-medium">
                   {{ user.name.split(' ').map((n: string) => n.charAt(0)).join('').toUpperCase() }}

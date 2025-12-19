@@ -105,7 +105,7 @@ const closeDialog = () => {
       <div>
         <Button
           @click="openDialog"
-          class="border bg-white border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+          variant="destructive"
           :disabled="disabled"
         >
           {{ triggerLabel }}
