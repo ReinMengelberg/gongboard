@@ -1,17 +1,36 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '~~/prisma/generated/client'
+import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 
-// Ensure a single PrismaClient instance across hot-reloads (e.g., in dev with Nuxt/Nodemon)
-// In production, a single instance per process is created.
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const prismaClientSingleton = () => {
+    const url = new URL(process.env.DATABASE_URL!)
 
-export const prisma: PrismaClient =
-    globalForPrisma.prisma ??
-    new PrismaClient({
-      log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-    });
+    const adapter = new PrismaMariaDb({
+        host: url.hostname,
+        port: parseInt(url.port || '3306'),
+        user: url.username,
+        password: url.password,
+        database: url.pathname.slice(1), // Remove leading '/'
+        connectionLimit: 5
+    })
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+    return new PrismaClient({
+        adapter,
+        log: process.env.NODE_ENV === 'development'
+            ? ['query', 'error', 'warn']
+            : ['error']
+    })
 }
 
-export default prisma;
+type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>
+
+const globalForPrisma = globalThis as unknown as {
+    prisma?: PrismaClientSingleton
+}
+
+export const prisma = globalForPrisma.prisma ?? prismaClientSingleton()
+
+if (process.env.NODE_ENV !== 'production') {
+    globalForPrisma.prisma = prisma
+}
+
+export default prisma

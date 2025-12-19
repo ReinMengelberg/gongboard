@@ -1,5 +1,5 @@
 import {defineEventHandler, setResponseStatus} from 'h3'
-import {ApiResponse} from '@/server/utils/ApiResponse'
+import {ApiResponse} from '~~/server/utils/ApiResponse'
 
 export default defineEventHandler(async (event) => {
     const path = getRequestURL(event).pathname

@@ -5,7 +5,7 @@ import unauthenticated from "~~/server/middleware/unauthenticated";
 import { compare } from 'bcryptjs'
 
 const bodySchema = z.object({
-    email: z.email(),
+    email: z.string().email(),
     password: z.string().min(8),
 })
 
