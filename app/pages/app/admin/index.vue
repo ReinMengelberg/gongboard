@@ -22,7 +22,7 @@ definePageMeta({
 
       <NuxtLink to="/app/admin/users" class="group block">
         <Card class="h-full transition-all duration-200 group-hover:border-primary/50 group-hover:bg-accent/50 group-hover:shadow-md">
-          <div class="flex items-center gap-4 p-6">
+          <div class="flex items-center gap-4 py-2 px-6">
             <div class="flex h-12 w-12 items-center justify-center rounded-lg border bg-background transition-colors group-hover:text-primary">
               <i class="ri-team-line text-2xl" aria-hidden="true" />
             </div>
