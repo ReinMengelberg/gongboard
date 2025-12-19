@@ -13,13 +13,13 @@ export default defineEventHandler(async (event) => {
     // Must be authenticated
     if (!session?.user) {
         setResponseStatus(event, 401)
-        return ApiResponse.error(401, 'Unauthenticated').toJSON()
+        return ApiResponse.error(401, 'Unauthenticated')
     }
 
     // Must be admin
     if (!session.user.admin) {
         setResponseStatus(event, 403)
-        return ApiResponse.error(403, 'Admin only').toJSON()
+        return ApiResponse.error(403, 'Admin only')
     }
 
     // Continue to the next handler if authenticated and admin

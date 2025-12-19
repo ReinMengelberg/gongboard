@@ -7,15 +7,12 @@ export default defineEventHandler(async (event) => {
     if (!path.startsWith('/api') || method === 'OPTIONS') {
         return
     }
-    if (!path.startsWith('/api') || method === 'OPTIONS') {
-        return
-    }
 
     const session = await getUserSession(event)
 
     if (!session?.user) {
         setResponseStatus(event, 401)
-        return ApiResponse.error(401, 'Unauthenticated').toJSON()
+        return ApiResponse.error(401, 'Unauthenticated')
     }
 
     // Continue to the next handler if authenticated
