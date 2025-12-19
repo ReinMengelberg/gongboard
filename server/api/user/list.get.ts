@@ -1,7 +1,6 @@
 import { ApiResponse } from "~~/server/utils/ApiResponse";
 import admin from "~~/server/middleware/admin";
 import { UserRepository } from "~~/server/db/UserRepository";
-import type {Prisma} from "@prisma/client";
 
 export default eventHandler({
   onRequest: [admin],
@@ -25,21 +24,11 @@ export default eventHandler({
     const skip = (page - 1) * perPage;
     const take = perPage;
 
-    // Base where from search q
-    const searchWhere: Prisma.UserWhereInput | undefined = q
-      ? {
-          OR: [
-            { name: { contains: q } },
-            { email: { contains: q } },
-          ],
-        }
-      : undefined;
-
     // Admin filter (?admin=true|false)
-    let adminWhere: Prisma.UserWhereInput | undefined;
+    let adminFilter: boolean | undefined;
     if (typeof query.admin === 'string') {
       if (query.admin === 'true' || query.admin === 'false') {
-        adminWhere = { admin: query.admin === 'true' };
+        adminFilter = query.admin === 'true';
       } else {
         return ApiResponse.error(400, 'Invalid admin filter; expected true|false');
       }
@@ -61,35 +50,15 @@ export default eventHandler({
       resourceTokens = rawResourceParam.split(',');
     }
 
-    // Clean tokens and build prisma filters
-    const resourceFilters: Prisma.UserWhereInput[] = [];
-    for (const token of resourceTokens) {
-      const raw = token.trim();
-      if (!raw) continue;
-      const negate = raw.startsWith('!');
-      const numStr = negate ? raw.slice(1) : raw;
-      const id = Number(numStr);
-      if (!Number.isFinite(id) || id <= 0) {
-        return ApiResponse.error(400, `Invalid resource_id value: ${raw}`);
-      }
-      const relationFilter: Prisma.UserWhereInput = negate
-        ? { resources: { none: { resource_id: id } } }
-        : { resources: { some: { resource_id: id } } };
-      resourceFilters.push(relationFilter);
-    }
-
-    // Compose all filters with AND so all constraints must match
-    const andFilters: Prisma.UserWhereInput[] = [];
-    if (searchWhere) andFilters.push(searchWhere);
-    if (adminWhere) andFilters.push(adminWhere);
-    if (resourceFilters.length) andFilters.push(...resourceFilters);
-
-    const where: Prisma.UserWhereInput | undefined =
-      andFilters.length ? { AND: andFilters } : undefined;
+    const filters = {
+      search: q,
+      admin: adminFilter,
+      resourceIds: resourceTokens.map(t => t.trim()).filter(Boolean),
+    };
 
     const [users, total] = await Promise.all([
-      UserRepository.list({ skip, take, where }),
-      UserRepository.count(where),
+      UserRepository.list({ skip, take, filters }),
+      UserRepository.count(filters),
     ]);
 
     const safeUsers = users.map((u: any) => {

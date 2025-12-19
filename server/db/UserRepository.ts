@@ -9,14 +9,43 @@ export type UpdateUserData = Omit<Prisma.UserUncheckedUpdateInput,
     "id" | "created_at" | "updated_at"
 >;
 
+export type UserFilters = {
+    search?: string;
+    admin?: boolean;
+};
+
 export type ListUsersParams = {
     skip?: number;
     take?: number;
-    where?: Prisma.UserWhereInput;
+    filters?: UserFilters;
     orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[];
     include?: Prisma.UserInclude;
     select?: Prisma.UserSelect;
 };
+
+function buildWhereClause(filters?: UserFilters): Prisma.UserWhereInput | undefined {
+    if (!filters) return undefined;
+
+    const andFilters: Prisma.UserWhereInput[] = [];
+
+    if (filters.search) {
+        const q = filters.search.trim();
+        if (q) {
+            andFilters.push({
+                OR: [
+                    { name: { contains: q } },
+                    { email: { contains: q } },
+                ],
+            });
+        }
+    }
+
+    if (filters.admin !== undefined) {
+        andFilters.push({ admin: filters.admin });
+    }
+
+    return andFilters.length > 0 ? { AND: andFilters } : undefined;
+}
 
 function mapPrismaError(err: unknown): never {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
@@ -63,7 +92,8 @@ export const UserRepository = {
     },
 
     async list(params: ListUsersParams = {}): Promise<User[]> {
-        const { skip, take, where, orderBy, include, select } = params;
+        const { skip, take, filters, orderBy, include, select } = params;
+        const where = buildWhereClause(filters);
         return prisma.user.findMany({
             skip,
             take,
@@ -74,7 +104,8 @@ export const UserRepository = {
         } as Prisma.UserFindManyArgs);
     },
 
-    async count(where?: Prisma.UserWhereInput): Promise<number> {
+    async count(filters?: UserFilters): Promise<number> {
+        const where = buildWhereClause(filters);
         return prisma.user.count({ where });
     },
 
