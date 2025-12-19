@@ -11,7 +11,7 @@ export interface User {
     admin: boolean;
 
     avatar: string;
-    music: string;
+    sound: string;
     drop: number;
 
     verified_at: string;

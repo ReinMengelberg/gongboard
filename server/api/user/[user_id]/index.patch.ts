@@ -7,11 +7,10 @@ import { hash } from 'bcryptjs'
 const bodySchema = z.object({
     name: z.string().min(1).optional(),
     email: z.string().email().optional(),
+    drop: z.number().optional(),
     old_password: z.string().min(8).optional(),
     new_password: z.string().min(8).optional(),
     new_password_confirm: z.string().min(8).optional(),
-    // alias for backward compatibility with clients sending confirm_password
-    confirm_password: z.string().min(8).optional(),
     admin: z.boolean().optional(),
 }).refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field must be provided',

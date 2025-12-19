@@ -15,15 +15,15 @@ datasource db {
 }
 
 model User {
-  id          Int       @id @default(autoincrement())
-  name        String
-  email       String    @unique
-  admin       Boolean   @default(false)
-  password    String
+  id       Int     @id @default(autoincrement())
+  name     String
+  email    String  @unique
+  admin    Boolean @default(false)
+  password String
 
-  avatar      String?
-  sound       String?
-  drop        Int?
+  avatar String?
+  sound  String?
+  drop   Int?
 
   verified_at DateTime?
   created_at  DateTime  @default(now())
