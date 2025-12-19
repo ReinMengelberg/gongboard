@@ -9,7 +9,11 @@ export interface User {
     email: string;
     password: string;
     admin: boolean;
+
     avatar: string;
+    music: string;
+    drop: number;
+
     verified_at: string;
     created_at: string;
     updated_at: string;
