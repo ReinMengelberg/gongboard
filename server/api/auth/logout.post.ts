@@ -1,5 +1,5 @@
-import { ApiResponse } from "~~/server/utils/ApiResponse";
-import authenticated from "~~/server/utils/middleware/authenticated"
+import { ApiResponse } from "~~/server/http/ApiResponse";
+import authenticated from "~~/server/http/middleware/authenticated"
 
 export default eventHandler({
     onRequest: [authenticated],

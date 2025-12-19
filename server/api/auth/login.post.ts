@@ -1,8 +1,7 @@
 import { z } from 'zod'
-import { ApiResponse } from "~~/server/utils/ApiResponse";
-import { UserRepository } from "~~/server/db/UserRepository";
-import unauthenticated from "~~/server/utils/middleware/unauthenticated";
-import { compare } from 'bcryptjs'
+import { ApiResponse } from "~~/server/http/ApiResponse";
+import { User } from "~~/server/models/User";
+import unauthenticated from "~~/server/http/middleware/unauthenticated";
 
 const bodySchema = z.object({
     email: z.string().email(),
@@ -14,16 +13,10 @@ export default eventHandler({
     handler: async (event) => {
         const { email, password } = await readValidatedBody(event, bodySchema.parse)
 
-        // Find user in DB
-        const user = await UserRepository.findByEmail(email)
+        // Use the Laravel-style authenticate method
+        const user = await User.authenticate(email, password)
 
-        // If no user or password mismatch -> 401
         if (!user) {
-            return ApiResponse.error(401, 'Invalid credentials')
-        }
-
-        const passwordMatches = compare(password, user.password)
-        if (!passwordMatches) {
             return ApiResponse.error(401, 'Invalid credentials')
         }
 
@@ -34,6 +27,9 @@ export default eventHandler({
                 name: user.name,
                 email: user.email,
                 admin: user.admin,
+                verified_at: user.verified_at,
+                created_at: user.created_at,
+                updated_at: user.updated_at,
             },
             extendedAt: Date.now(),
         })
