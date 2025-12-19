@@ -1,6 +1,20 @@
 import 'dotenv/config'
 import { hash } from 'bcryptjs'
-import { prisma } from '../app/server/db/Connection'
+import { PrismaClient } from './generated/client'
+import { PrismaMariaDb } from '@prisma/adapter-mariadb'
+
+const url = new URL(process.env.DATABASE_URL!)
+
+const adapter = new PrismaMariaDb({
+    host: url.hostname,
+    port: parseInt(url.port || '3306'),
+    user: url.username,
+    password: url.password,
+    database: url.pathname.slice(1),
+    connectionLimit: 1
+})
+
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
     const adminEmail = process.env.ADMIN_EMAIL
