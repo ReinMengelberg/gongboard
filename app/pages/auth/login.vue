@@ -11,7 +11,8 @@ definePageMeta({
 
 const email = ref("")
 const password = ref("")
-const auth = useAuthStore()
+const pinia = usePinia()
+const auth = useAuthStore(pinia)
 
 async function onSubmit() {
   if (!email.value || !password.value || auth.loading) return
@@ -22,7 +23,7 @@ async function onSubmit() {
 <template>
   <div class="mx-auto grid w-[350px] gap-6">
     <div class="grid gap-2 text-center">
-      <img src="/joof.png" alt="Logo" class="block mx-auto h-20 w-22" />
+      <img src="~/public/gongboard.png" alt="Logo" class="block mx-auto h-20 w-22" />
       <h1 class="text-3xl font-bold">Login</h1>
       <p class="text-balance text-muted-foreground">
         Enter your email below to login to your account

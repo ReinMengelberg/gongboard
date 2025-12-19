@@ -1,53 +1,38 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
-import { useVModel } from '@vueuse/core'
-import { SwitchRoot, SwitchThumb } from 'reka-ui'
-import { cn } from '@/lib/utils'
+import type { SwitchRootEmits, SwitchRootProps } from "reka-ui"
+import type { HTMLAttributes } from "vue"
+import { reactiveOmit } from "@vueuse/core"
+import {
+  SwitchRoot,
+  SwitchThumb,
+  useForwardPropsEmits,
+} from "reka-ui"
+import { cn } from "@/lib/utils"
 
-const props = defineProps<{
-  defaultChecked?: boolean
-  checked?: boolean
-  disabled?: boolean
-  required?: boolean
-  name?: string
-  id?: string
-  value?: string
-  class?: HTMLAttributes['class']
-}>()
+const props = defineProps<SwitchRootProps & { class?: HTMLAttributes["class"] }>()
 
-const emits = defineEmits<{
-  (e: 'update:checked', payload: boolean): void
-}>()
+const emits = defineEmits<SwitchRootEmits>()
 
-const checked = useVModel(props, 'checked', emits, {
-  passive: true,
-  defaultValue: props.defaultChecked,
-})
+const delegatedProps = reactiveOmit(props, "class")
+
+const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>
 
 <template>
   <SwitchRoot
-    v-model:checked="checked"
-    :disabled="props.disabled"
-    :required="props.required"
-    :name="props.name"
-    :id="props.id"
-    :value="props.value"
+    v-slot="slotProps"
     data-slot="switch"
+    v-bind="forwarded"
     :class="cn(
-      // container styles from shadcn/vue new-york theme
-      'peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-[background-color,box-shadow] outline-none focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
-      // states
-      'data-[state=unchecked]:bg-input data-[state=checked]:bg-primary',
+      'peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
       props.class,
     )"
   >
     <SwitchThumb
       data-slot="switch-thumb"
-      :class="cn(
-        'pointer-events-none block size-5 rounded-full bg-background shadow-xs ring-0 transition-transform',
-        'data-[state=unchecked]:translate-x-0 data-[state=checked]:translate-x-5',
-      )"
-    />
+      :class="cn('bg-background dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0')"
+    >
+      <slot name="thumb" v-bind="slotProps" />
+    </SwitchThumb>
   </SwitchRoot>
 </template>

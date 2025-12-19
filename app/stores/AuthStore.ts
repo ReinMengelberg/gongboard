@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
 import AuthService, {type LoginRequest} from '../services/api/AuthService'
-import type {User} from "@/src/types/models/user";
+import type {User} from "~/src/types/models/user";
 import NotificationService from '../services/utils/NotificationService'
 import ErrorService from '../services/utils/ErrorService'
 

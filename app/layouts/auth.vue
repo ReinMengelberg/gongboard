@@ -10,7 +10,7 @@ import NotificationComponent from "@/components/utils/NotificationComponent.vue"
     </div>
     <div class="hidden bg-muted lg:block relative">
       <img
-          src="/city.jpg"
+          src="../public/alex.png"
           alt=""
           aria-hidden="true"
           class="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
