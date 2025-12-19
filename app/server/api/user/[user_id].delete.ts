@@ -1,7 +1,8 @@
 import { z } from 'zod'
-import { ApiResponse } from "~~/server/utils/ApiResponse";
-import { UserRepository } from "~~/server/db/UserRepository";
+import { ApiResponse } from "~/server/utils/ApiResponse";
+import { UserRepository } from "~/server/db/UserRepository";
 import { compare } from 'bcryptjs'
+import authenticated from "~/middleware/authenticated";
 
 const bodySchema = z.object({
     password: z.string(),
