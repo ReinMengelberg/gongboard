@@ -67,6 +67,7 @@ const handleSelect = (user: User) => {
 <template>
   <ScrollArea
       :class="props.class"
+      class="rounded-lg border"
   >
     <Table>
       <TableHeader>

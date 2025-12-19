@@ -156,7 +156,7 @@ const afterDeleteSuccess = async () => {
 </script>
 
 <template>
-  <Card class="w-[800px] p-4 mx-auto">
+  <Card class="w-[60vw] p-4 mx-auto">
     <CardHeader>
       <div class="flex items-center gap-2">
         <Button variant="ghost" size="icon" class="-ml-2" @click="navigateTo('/app/admin/users')"

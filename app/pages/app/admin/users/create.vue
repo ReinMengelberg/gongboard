@@ -68,7 +68,7 @@ function discard() {
 </script>
 
 <template>
-  <div class="p-4 w-[800px]">
+  <div class="p-4 w-[60vw]">
     <Card class="w-3xl mx-auto">
       <CardHeader>
         <div class="flex items-center gap-2">

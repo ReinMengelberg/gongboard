@@ -24,7 +24,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Card class="relative w-[800px] mx-auto p-4">
+  <Card class="relative w-[60vw] mx-auto p-4">
     <CardHeader>
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
