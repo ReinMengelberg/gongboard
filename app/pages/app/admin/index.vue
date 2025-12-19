@@ -9,7 +9,7 @@ definePageMeta({
 </script>
 
 <template>
-  <Card class="relative w-[800px] mx-auto p-4">
+  <Card class="relative w-[80vw] mx-auto p-4">
     <CardHeader>
       <div class="flex items-center gap-2">
         <Button variant="ghost" size="icon" class="-ml-2" @click="navigateTo('/app/home')" aria-label="Go back">

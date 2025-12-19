@@ -15,7 +15,7 @@ const auth = useAuthStore()
 <template>
   <Card class="relative mx-auto w-[800px]">
     <CardHeader class="flex flex-col items-center gap-2">
-      <img src="../../public/gongboard.png" alt="Logo" class="h-20 w-22" />
+      <img src="../../public/gongboard.png" alt="Logo" class="h-24 w-120" />
       <CardTitle class="text-center">
         Welcome back<span v-if="auth.user?.name">, {{ auth.user.name }}</span>
       </CardTitle>
