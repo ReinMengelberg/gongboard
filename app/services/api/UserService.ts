@@ -1,6 +1,6 @@
 // UserService connects to the user management API endpoints.
 import ApiService from "./ApiService";
-import type {IApiResponse} from "@/server/utils/ApiResponse";
+import type {IApiResponse} from "@/server/http/ApiResponse";
 import type {User} from "@/src/types/models/user";
 import type {PaginatedData} from "@/src/types/api/PaginatedData";
 

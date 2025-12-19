@@ -1,6 +1,6 @@
 // Auth connects to the resource API endpoints.
 import ApiService from "./ApiService";
-import type { IApiResponse } from "@/server/utils/ApiResponse";
+import type { IApiResponse } from "@/server/http/ApiResponse";
 import type { User } from "@/src/types/models/user";
 
 export interface LoginRequest {
