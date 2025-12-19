@@ -77,7 +77,7 @@ export default eventHandler({
             const user = await User.update(id, data)
 
             // Return user without password
-            return ApiResponse.success(User.toPublic(user), 'User updated')
+            return ApiResponse.success(user, 'User updated')
         } catch (e: any) {
             const msg = (e?.message || '').toLowerCase()
             if (msg.includes('unique constraint')) {

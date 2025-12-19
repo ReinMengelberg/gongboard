@@ -33,10 +33,7 @@ export default eventHandler({
         admin: isAdmin ?? false,
       })
 
-      // Remove password from response
-      const { password: _pw, ...safe } = user as any
-
-      return ApiResponse.success(safe, 'User created', 201)
+      return ApiResponse.success(user, 'User created', 201)
     } catch (e: any) {
       const msg = (e?.message || '').toLowerCase()
       if (msg.includes('unique constraint')) {

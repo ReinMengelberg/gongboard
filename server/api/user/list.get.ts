@@ -94,12 +94,6 @@ export default eventHandler({
         .orderBy({ created_at: 'desc' })
         .paginate({ page, perPage });
 
-    // Remove passwords from response
-    const safeUsers = result.data.map((user: any) => User.toPublic(user));
-
-    return ApiResponse.success({
-      ...result,
-      data: safeUsers
-    });
+    return ApiResponse.success(result);
   },
 });

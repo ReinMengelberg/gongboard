@@ -2,6 +2,7 @@ import {prisma} from '~~/server/db/prisma'
 
 export abstract class Model {
     protected static modelName: string
+    protected static hidden: string[] = []
 
     protected static getModel() {
         const modelName = this.modelName
@@ -9,24 +10,42 @@ export abstract class Model {
         return prisma[modelName.charAt(0).toLowerCase() + modelName.slice(1)]
     }
 
+    protected static removeHidden<T extends Record<string, any>>(data: T): Partial<T> {
+        if (this.hidden.length === 0) return data;
+
+        const result = { ...data };
+        this.hidden.forEach(field => {
+            delete result[field];
+        });
+        return result;
+    }
+
+    protected static removeHiddenFromArray<T extends Record<string, any>>(data: T[]): Partial<T>[] {
+        return data.map(item => this.removeHidden(item));
+    }
+
     public static query(): QueryBuilder {
-        return new QueryBuilder(this.getModel());
+        return new QueryBuilder(this.getModel(), this);
     }
 
     public static async create<T>(data: any): Promise<T> {
-        return await this.getModel().create({data})
+        const result = await this.getModel().create({data})
+        return this.removeHidden(result) as T
     }
 
     public static async find<T>(id: number | string): Promise<T | null> {
-        return await this.getModel().findUnique({where: {id}})
+        const result = await this.getModel().findUnique({where: {id}})
+        return result ? this.removeHidden(result) as T : null
     }
 
     public static async findMany<T>(where?: any, include?: any): Promise<T[]> {
-        return await this.getModel().findMany({where, include})
+        const result = await this.getModel().findMany({where, include})
+        return this.removeHiddenFromArray(result) as T[]
     }
 
     public static async update<T>(id: number | string, data: any): Promise<T> {
-        return await this.getModel().update({where: {id}, data})
+        const result = await this.getModel().update({where: {id}, data})
+        return this.removeHidden(result) as T
     }
 
     public static async delete(id: number | string): Promise<void> {
@@ -34,7 +53,8 @@ export abstract class Model {
     }
 
     public static async first<T>(where?: any): Promise<T | null> {
-        return await this.getModel().findFirst({where})
+        const result = await this.getModel().findFirst({where})
+        return result ? this.removeHidden(result) as T : null
     }
 
     public static async count(where?: any): Promise<number> {
@@ -56,12 +76,14 @@ export abstract class Model {
 
 class QueryBuilder {
     private model: any;
+    private modelClass: typeof Model;
     private whereClause: any = {};
     private orderByClause: any = undefined;
     private includeClause: any = undefined;
 
-    constructor(model: any) {
+    constructor(model: any, modelClass: typeof Model) {
         this.model = model;
+        this.modelClass = modelClass;
     }
 
     where(conditions: any) {
@@ -88,19 +110,23 @@ class QueryBuilder {
     }
 
     async get<T>(): Promise<T[]> {
-        return await this.model.findMany({
+        const result = await this.model.findMany({
             where: this.whereClause,
             orderBy: this.orderByClause,
             include: this.includeClause
         });
+        // @ts-ignore
+        return this.modelClass.removeHiddenFromArray(result) as T[];
     }
 
     async first<T>(): Promise<T | null> {
-        return await this.model.findFirst({
+        const result = await this.model.findFirst({
             where: this.whereClause,
             orderBy: this.orderByClause,
             include: this.includeClause
         });
+        // @ts-ignore
+        return result ? this.modelClass.removeHidden(result) as T : null;
     }
 
     async count(): Promise<number> {
@@ -139,7 +165,8 @@ class QueryBuilder {
         const to = total === 0 ? null : Math.min(skip + data.length, total);
 
         return {
-            data,
+            // @ts-ignore
+            data: this.modelClass.removeHiddenFromArray(data) as T[],
             current_page: page,
             last_page,
             per_page: perPage,

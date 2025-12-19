@@ -32,15 +32,11 @@ export interface User {
 
 export class User extends ModelWithTraits {
     protected static modelName = "User";
+    protected static override hidden = ['password'];
 
     /**
      * Functions
      */
-
-    public static toPublic(user: any): Omit<any, 'password'> {
-        const { password, ...safe } = user;
-        return safe;
-    }
 
     public static async findByEmail(email: string): Promise<PrismaUser | null> {
         return await this.first<PrismaUser>({ email });

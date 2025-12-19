@@ -18,7 +18,6 @@ export default eventHandler({
       return ApiResponse.error(404, 'User not found')
     }
 
-    // Return user without password
-    return ApiResponse.success(User.toPublic(user))
+    return ApiResponse.success(user)
   },
 })
