@@ -21,9 +21,9 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="mx-auto grid w-[350px] gap-6">
+  <div class="mx-auto grid w-[600px] gap-6">
     <div class="grid gap-2 text-center">
-      <img src="~/public/gongboard.png" alt="Logo" class="block mx-auto h-20 w-22" />
+      <img src="../../public/gongboard.png" alt="Logo" class="block mx-auto h-28 w-full" />
       <h1 class="text-3xl font-bold">Login</h1>
       <p class="text-balance text-muted-foreground">
         Enter your email below to login to your account
