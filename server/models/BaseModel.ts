@@ -1,5 +1,4 @@
 import {prisma} from '~~/server/db/prisma'
-import type {PrismaClient} from '@prisma/client'
 
 export abstract class Model {
     protected static modelName: string
@@ -8,6 +7,10 @@ export abstract class Model {
         const modelName = this.modelName
         // @ts-ignore - Dynamic model access
         return prisma[modelName.charAt(0).toLowerCase() + modelName.slice(1)]
+    }
+
+    public static query(): QueryBuilder {
+        return new QueryBuilder(this.getModel());
     }
 
     public static async create<T>(data: any): Promise<T> {
@@ -34,25 +37,115 @@ export abstract class Model {
         return await this.getModel().findFirst({where})
     }
 
-    public static where(conditions: any) {
-        const model = this.getModel();
-        return {
-            findMany: (options?: any) => model.findMany({where: conditions, ...options}),
-            first: () => model.findFirst({where: conditions}),
-            orderBy: (order: any) => ({
-                findMany: (options?: any) => model.findMany({where: conditions, orderBy: order, ...options}),
-                first: () => model.findFirst({where: conditions, orderBy: order})
-            }),
-            limit: (limit: number) => ({
-                findMany: (options?: any) => model.findMany({where: conditions, take: limit, ...options})
-            })
-        };
+    public static async count(where?: any): Promise<number> {
+        return await this.getModel().count({where})
     }
 
-    public static with(relations: any) {
-        return {
-            findMany: (where?: any) => this.getModel().findMany({where, include: relations}),
-            first: (where?: any) => this.getModel().findFirst({where, include: relations})
+    public static where(conditions: any): QueryBuilder {
+        return this.query().where(conditions);
+    }
+
+    public static with(relations: any): QueryBuilder {
+        return this.query().with(relations);
+    }
+
+    public static orderBy(order: any): QueryBuilder {
+        return this.query().orderBy(order);
+    }
+}
+
+class QueryBuilder {
+    private model: any;
+    private whereClause: any = {};
+    private orderByClause: any = undefined;
+    private includeClause: any = undefined;
+
+    constructor(model: any) {
+        this.model = model;
+    }
+
+    where(conditions: any) {
+        this.whereClause = { ...this.whereClause, ...conditions };
+        return this;
+    }
+
+    orWhere(conditions: any) {
+        if (!this.whereClause.OR) {
+            this.whereClause.OR = [];
         }
+        this.whereClause.OR.push(conditions);
+        return this;
+    }
+
+    orderBy(order: any) {
+        this.orderByClause = order;
+        return this;
+    }
+
+    with(relations: any) {
+        this.includeClause = relations;
+        return this;
+    }
+
+    async get<T>(): Promise<T[]> {
+        return await this.model.findMany({
+            where: this.whereClause,
+            orderBy: this.orderByClause,
+            include: this.includeClause
+        });
+    }
+
+    async first<T>(): Promise<T | null> {
+        return await this.model.findFirst({
+            where: this.whereClause,
+            orderBy: this.orderByClause,
+            include: this.includeClause
+        });
+    }
+
+    async count(): Promise<number> {
+        return await this.model.count({ where: this.whereClause });
+    }
+
+    async paginate<T>(options: {
+        page?: number,
+        perPage?: number
+    } = {}): Promise<{
+        data: T[],
+        current_page: number,
+        last_page: number,
+        per_page: number,
+        total: number,
+        from: number | null,
+        to: number | null
+    }> {
+        const page = Math.max(options.page || 1, 1);
+        const perPage = Math.min(Math.max(options.perPage || 25, 1), 100);
+        const skip = (page - 1) * perPage;
+
+        const [data, total] = await Promise.all([
+            this.model.findMany({
+                where: this.whereClause,
+                orderBy: this.orderByClause,
+                include: this.includeClause,
+                skip,
+                take: perPage
+            }),
+            this.count()
+        ]);
+
+        const last_page = Math.max(1, Math.ceil(total / perPage));
+        const from = total === 0 ? null : skip + 1;
+        const to = total === 0 ? null : Math.min(skip + data.length, total);
+
+        return {
+            data,
+            current_page: page,
+            last_page,
+            per_page: perPage,
+            from,
+            to,
+            total
+        };
     }
 }

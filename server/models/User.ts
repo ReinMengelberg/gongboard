@@ -37,6 +37,7 @@ export class User extends ModelWithTraits {
      * Functions
      */
 
+
     public static async findByEmail(email: string): Promise<PrismaUser | null> {
         return await this.first<PrismaUser>({ email });
     }

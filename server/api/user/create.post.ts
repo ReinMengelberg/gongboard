@@ -1,8 +1,7 @@
 import { z } from 'zod'
 import { ApiResponse } from "~~/server/http/ApiResponse";
-import { UserRepository } from "~~/server/db/UserRepository";
+import { User } from "~~/server/models/User";
 import admin from "~~/server/http/middleware/admin";
-import { hash } from 'bcryptjs'
 
 const bodySchema = z.object({
   name: z.string().min(1),
@@ -16,20 +15,31 @@ export default eventHandler({
   handler: async (event) => {
     const { name, email, password, admin: isAdmin } = await readValidatedBody(event, bodySchema.parse)
 
-    const hashed = await hash(password, 12)
-
     try {
-      const user = await UserRepository.create({
+      // Check if user already exists
+      const existingUser = await User.findByEmail(email)
+      if (existingUser) {
+        return ApiResponse.error(409, 'A user with the provided email already exists.')
+      }
+
+      // Hash password using Laravel-style method
+      const hashedPassword = await User.hashPassword(password)
+
+      // Create user using Laravel-style method
+      const user = await User.create({
         name,
         email,
-        password: hashed,
+        password: hashedPassword,
         admin: isAdmin ?? false,
       })
+
+      // Remove password from response
       const { password: _pw, ...safe } = user as any
+
       return ApiResponse.success(safe, 'User created', 201)
     } catch (e: any) {
       const msg = (e?.message || '').toLowerCase()
-      if (msg.includes('already exists')) {
+      if (msg.includes('unique constraint')) {
         return ApiResponse.error(409, 'A user with the provided unique field already exists.')
       }
       return ApiResponse.error(400, 'Failed to create user')
