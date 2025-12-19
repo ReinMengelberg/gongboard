@@ -35,7 +35,18 @@ export abstract class Model {
     }
 
     public static where(conditions: any) {
-        return this.getModel().findMany({where: conditions})
+        const model = this.getModel();
+        return {
+            findMany: (options?: any) => model.findMany({where: conditions, ...options}),
+            first: () => model.findFirst({where: conditions}),
+            orderBy: (order: any) => ({
+                findMany: (options?: any) => model.findMany({where: conditions, orderBy: order, ...options}),
+                first: () => model.findFirst({where: conditions, orderBy: order})
+            }),
+            limit: (limit: number) => ({
+                findMany: (options?: any) => model.findMany({where: conditions, take: limit, ...options})
+            })
+        };
     }
 
     public static with(relations: any) {

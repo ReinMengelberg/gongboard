@@ -46,6 +46,26 @@ export class User extends ModelWithTraits {
     }
 
     /**
+     * Relations
+     */
+    public async getLost() {
+        return this.with({ lost: true }).first({ id: this.id });
+    }
+
+    public async getLeads() {
+        return this.with({ leads: true }).first({ id: this.id });
+    }
+
+    public async getMeetings() {
+        return this.with({ meetings: true }).first({ id: this.id });
+    }
+
+    public async getSales() {
+        return this.with({ meetings: true }).first({ id: this.id });
+    }
+
+
+    /**
      * Media
      */
     static override mediaCollections(): MediaCollection[] {
