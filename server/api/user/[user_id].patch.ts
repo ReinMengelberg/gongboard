@@ -6,7 +6,7 @@ import { hash } from 'bcryptjs'
 
 const bodySchema = z.object({
     name: z.string().min(1).optional(),
-    email: z.string().email(),
+    email: z.string().email().optional(),
     old_password: z.string().min(8).optional(),
     new_password: z.string().min(8).optional(),
     new_password_confirm: z.string().min(8).optional(),
