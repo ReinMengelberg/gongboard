@@ -14,6 +14,14 @@ export default defineNuxtConfig({
         ],
     },
 
+    app: {
+        head: {
+            link: [
+                { rel: 'icon', type: 'image/png', href: '~/public/gongboard_fav.png' }
+            ]
+        }
+    },
+
     modules: ['shadcn-nuxt', 'nuxt-auth-utils', '@pinia/nuxt'],
 
     shadcn: {

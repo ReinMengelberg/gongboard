@@ -1,6 +1,6 @@
-import { ApiResponse } from "~~/server/utils/ApiResponse";
-import admin from "@/server/utils/middleware/admin";
-import { UserRepository } from "~~/server/db/UserRepository";
+import { ApiResponse } from "~/server/utils/ApiResponse";
+import admin from "~/server/middleware/admin";
+import { UserRepository } from "~/server/db/UserRepository";
 
 export default eventHandler({
   onRequest: [admin],
