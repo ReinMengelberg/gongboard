@@ -52,7 +52,7 @@ onUnmounted(() => {
           <div
               v-for="(notification, index) in notifications"
               :key="index"
-              class="mt-2 pointer-events-auto w-full max-w-lg overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/5"
+              class="mt-2 pointer-events-auto w-full max-w-lg overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10"
           >
             <!-- Success Notification-->
             <div v-if="notification.type === 'success'" class="p-4">
@@ -61,16 +61,16 @@ onUnmounted(() => {
                   <i class="ri-checkbox-circle-line ri-xl text-green-500" aria-hidden="true" />
                 </div>
                 <div class="ml-3 w-0 flex-1 pt-0.5">
-                  <p class="text-sm font-medium text-gray-900">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">
                     Success
                   </p>
-                  <p class="mt-1 text-sm text-gray-500">{{ notification.message }}</p>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ notification.message }}</p>
                 </div>
                 <div class="ml-4 flex shrink-0">
                   <button
                       type="button"
                       @click="removeNotification(index)"
-                      class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                      class="inline-flex rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
                   >
                     <span class="sr-only">Close</span>
                     <i class="ri-close-line ri-lg" aria-hidden="true" />
@@ -82,19 +82,19 @@ onUnmounted(() => {
             <div v-if="notification.type === 'info'" class="p-4">
               <div class="flex items-start">
                 <div class="shrink-0">
-                  <i class="ri-information-line ri-xl text-gray-500" aria-hidden="true" />
+                  <i class="ri-information-line ri-xl text-gray-500 dark:text-gray-400" aria-hidden="true" />
                 </div>
                 <div class="ml-3 w-0 flex-1 pt-0.5">
-                  <p class="text-sm font-medium text-gray-900">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">
                     Info
                   </p>
-                  <p class="mt-1 text-sm text-gray-500">{{ notification.message }}</p>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ notification.message }}</p>
                 </div>
                 <div class="ml-4 flex shrink-0">
                   <button
                       type="button"
                       @click="removeNotification(index)"
-                      class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                      class="inline-flex rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
                   >
                     <span class="sr-only">Close</span>
                     <i class="ri-close-line ri-lg" aria-hidden="true" />
@@ -109,16 +109,16 @@ onUnmounted(() => {
                   <i class="ri-error-warning-line ri-xl text-orange-500" aria-hidden="true" />
                 </div>
                 <div class="ml-3 w-0 flex-1 pt-0.5">
-                  <p class="text-sm font-medium text-gray-900">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">
                     Warning
                   </p>
-                  <p class="mt-1 text-sm text-gray-500">{{ notification.message }}</p>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ notification.message }}</p>
                 </div>
                 <div class="ml-4 flex shrink-0">
                   <button
                       type="button"
                       @click="removeNotification(index)"
-                      class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                      class="inline-flex rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
                   >
                     <span class="sr-only">Close</span>
                     <i class="ri-close-line ri-lg" aria-hidden="true" />
@@ -133,16 +133,16 @@ onUnmounted(() => {
                   <i class="ri-close-circle-line ri-xl text-red-500" aria-hidden="true" />
                 </div>
                 <div class="ml-3 w-0 flex-1 pt-0.5">
-                  <p class="text-sm font-medium text-gray-900">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">
                     Error
                   </p>
-                  <p class="mt-1 text-sm text-gray-500">{{ notification.message }}</p>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ notification.message }}</p>
                 </div>
                 <div class="ml-4 flex shrink-0">
                   <button
                       type="button"
                       @click="removeNotification(index)"
-                      class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                      class="inline-flex rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
                   >
                     <span class="sr-only">Close</span>
                     <i class="ri-close-line ri-lg" aria-hidden="true" />
@@ -154,13 +154,13 @@ onUnmounted(() => {
             <div v-if="notification.type === 'email'" class="p-4">
               <div class="flex items-start">
                 <div class="shrink-0">
-                  <i class="ri-mail-unread-line ri-2x" aria-hidden="true" />
+                  <i class="ri-mail-unread-line ri-2x dark:text-white" aria-hidden="true" />
                 </div>
                 <div class="ml-3 w-0 flex-1 pt-0.5">
-                  <p class="text-sm font-medium text-gray-900">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">
                     New email from {{ notification.sender }}
                   </p>
-                  <p class="mt-1 text-sm text-gray-500">{{ notification.message }}</p>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ notification.message }}</p>
                 </div>
                 <div class="pr-10 pt-2">
                   <Button href="" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -171,7 +171,7 @@ onUnmounted(() => {
                   <button
                       type="button"
                       @click="removeNotification(index)"
-                      class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                      class="inline-flex rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
                   >
                     <span class="sr-only">Close</span>
                     <i class="ri-close-line ri-lg" aria-hidden="true" />
@@ -183,13 +183,13 @@ onUnmounted(() => {
             <div v-if="notification.type === 'chat'" class="p-4">
               <div class="flex items-start">
                 <div class="shrink-0">
-                  <i class="ri-chat-unread-line ri-2x" aria-hidden="true" />
+                  <i class="ri-chat-unread-line ri-2x dark:text-white" aria-hidden="true" />
                 </div>
                 <div class="ml-3 w-0 flex-1 pt-0.5">
-                  <p class="text-sm font-medium text-gray-900">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">
                     New message from {{ notification.sender }}
                   </p>
-                  <p class="mt-1 text-sm text-gray-500">{{ notification.message }}</p>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ notification.message }}</p>
                 </div>
                 <div class="pr-10 pt-2">
                   <Button href="" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -200,7 +200,7 @@ onUnmounted(() => {
                   <button
                       type="button"
                       @click="removeNotification(index)"
-                      class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                      class="inline-flex rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
                   >
                     <span class="sr-only">Close</span>
                     <i class="ri-close-line ri-lg" aria-hidden="true" />

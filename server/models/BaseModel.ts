@@ -3,6 +3,7 @@ import {prisma} from '~~/server/db/prisma'
 export abstract class Model {
     protected static modelName: string
     protected static hidden: string[] = []
+    private static visibleFields: string[] = []
 
     protected static getModel() {
         const modelName = this.modelName
@@ -13,8 +14,15 @@ export abstract class Model {
     protected static removeHidden<T extends Record<string, any>>(data: T): Partial<T> {
         if (this.hidden.length === 0) return data;
 
+        // Check if there are fields that should be made visible
+        const fieldsToHide = this.visibleFields.length > 0
+            ? this.hidden.filter(field => !this.visibleFields.includes(field))
+            : this.hidden;
+
+        if (fieldsToHide.length === 0) return data;
+
         const result = { ...data };
-        this.hidden.forEach(field => {
+        fieldsToHide.forEach(field => {
             delete result[field];
         });
         return result;
@@ -24,28 +32,47 @@ export abstract class Model {
         return data.map(item => this.removeHidden(item));
     }
 
+    private static resetVisible() {
+        this.visibleFields = [];
+    }
+
+    public static makeVisible(fields: string | string[]): typeof Model {
+        const fieldsArray = Array.isArray(fields) ? fields : [fields];
+        // @ts-ignore - Return the class itself for chaining
+        this.visibleFields = fieldsArray;
+        return this;
+    }
+
     public static query(): QueryBuilder {
         return new QueryBuilder(this.getModel(), this);
     }
 
     public static async create<T>(data: any): Promise<T> {
         const result = await this.getModel().create({data})
-        return this.removeHidden(result) as T
+        const processed = this.removeHidden(result) as T;
+        this.resetVisible();
+        return processed;
     }
 
     public static async find<T>(id: number | string): Promise<T | null> {
         const result = await this.getModel().findUnique({where: {id}})
-        return result ? this.removeHidden(result) as T : null
+        const processed = result ? this.removeHidden(result) as T : null;
+        this.resetVisible();
+        return processed;
     }
 
     public static async findMany<T>(where?: any, include?: any): Promise<T[]> {
         const result = await this.getModel().findMany({where, include})
-        return this.removeHiddenFromArray(result) as T[]
+        const processed = this.removeHiddenFromArray(result) as T[];
+        this.resetVisible();
+        return processed;
     }
 
     public static async update<T>(id: number | string, data: any): Promise<T> {
         const result = await this.getModel().update({where: {id}, data})
-        return this.removeHidden(result) as T
+        const processed = this.removeHidden(result) as T;
+        this.resetVisible();
+        return processed;
     }
 
     public static async delete(id: number | string): Promise<void> {
@@ -54,7 +81,9 @@ export abstract class Model {
 
     public static async first<T>(where?: any): Promise<T | null> {
         const result = await this.getModel().findFirst({where})
-        return result ? this.removeHidden(result) as T : null
+        const processed = result ? this.removeHidden(result) as T : null;
+        this.resetVisible();
+        return processed;
     }
 
     public static async count(where?: any): Promise<number> {

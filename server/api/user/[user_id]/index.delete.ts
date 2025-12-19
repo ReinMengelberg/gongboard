@@ -29,7 +29,7 @@ export default eventHandler({
         const { password } = await readValidatedBody(event, bodySchema.parse)
 
         // Verify password against the authenticated user (actor)
-        const actorRecord = await User.find(actor.id)
+        const actorRecord = await User.makeVisible('password').find(actor.id) as any
         if (!actorRecord) {
             return ApiResponse.error(401, 'Unauthorized')
         }
