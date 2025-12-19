@@ -14,14 +14,16 @@ export interface UploadedFile {
 
 export async function saveUploadedFile(
     file: MultiPartData,
-    folder: 'avatars' | 'music' = 'music'
+    model: string,
+    modelId: number | string,
+    collection: string
 ): Promise<UploadedFile> {
     // Generate unique filename
     const ext = file.filename?.split('.').pop() || ''
     const filename = `${randomUUID()}.${ext}`
 
-    // Create upload directory if it doesn't exist
-    const uploadDir = join(process.cwd(), 'public', 'uploads', folder)
+    // Create upload directory: /uploads/{model}/{model_id}/{collection}/
+    const uploadDir = join(process.cwd(), 'public', 'uploads', model, String(modelId), collection)
     await mkdir(uploadDir, { recursive: true })
 
     // Save file
@@ -29,7 +31,7 @@ export async function saveUploadedFile(
     await writeFile(fullPath, file.data)
 
     return {
-        path: `/uploads/${folder}/${filename}`,
+        path: `/uploads/${model}/${modelId}/${collection}/${filename}`,
         fullPath,
         filename,
         size: file.data.length,

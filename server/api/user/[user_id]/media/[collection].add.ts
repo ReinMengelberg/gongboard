@@ -3,8 +3,11 @@ import { ApiResponse } from '~~/server/utils/ApiResponse'
 import authenticated from '~~/server/utils/middleware/authenticated'
 import { saveUploadedFile, validateFileType, allowedAudioTypes, allowedImageTypes } from '~~/server/utils/FileUpload'
 
-const allowedCollections = ['avatar', 'music'] as const
+const allowedCollections = ['avatar', 'song'] as const
+const allowedModels = ['user'] as const
+
 type Collection = typeof allowedCollections[number]
+type Model = typeof allowedModels[number]
 
 const collectionConfig = {
     avatar: {
@@ -22,7 +25,20 @@ const collectionConfig = {
 export default eventHandler({
     onRequest: [authenticated],
     handler: async (event) => {
+        const model = getRouterParam(event, 'model') as Model
+        const modelIdParam = getRouterParam(event, 'model_id')
         const collection = getRouterParam(event, 'collection') as Collection
+
+        // Validate model
+        if (!model || !allowedModels.includes(model)) {
+            return ApiResponse.error(400, `Invalid model. Allowed: ${allowedModels.join(', ')}`)
+        }
+
+        // Validate model_id
+        const modelId = Number(modelIdParam)
+        if (!modelIdParam || isNaN(modelId)) {
+            return ApiResponse.error(400, 'Invalid model ID')
+        }
 
         // Validate collection
         if (!collection || !allowedCollections.includes(collection)) {
@@ -54,11 +70,49 @@ export default eventHandler({
         }
 
         try {
+            // Check if the record exists
+            let record: any
+            if (model === 'user') {
+                record = await prisma.user.findUnique({ where: { id: modelId } })
+            } else if (model === 'song') {
+                record = await prisma.song.findUnique({ where: { id: modelId } })
+            }
+
+            if (!record) {
+                return ApiResponse.error(404, `${model} not found`)
+            }
+
+            // Authorization check
+            const session = await getUserSession(event)
+            const actor = session?.user as { id: number; admin?: boolean } | undefined
+
+            if (!actor?.id) {
+                return ApiResponse.error(401, 'Unauthorized')
+            }
+
+            const isAdmin = !!actor.admin
+            const isSelf = model === 'user' && actor.id === modelId
+
+            if (!isAdmin && !isSelf) {
+                return ApiResponse.error(403, 'Forbidden')
+            }
+
             // Save the file
-            const uploadedFile = await saveUploadedFile(
-                file,
-                collection === 'avatar' ? 'avatars' : 'music'
-            )
+            const uploadedFile = await saveUploadedFile(file, model, modelId, collection)
+
+            // Update the database with the new file path
+            let updatedRecord: any
+            if (model === 'user') {
+                updatedRecord = await prisma.user.update({
+                    where: { id: modelId },
+                    data: { [collection]: uploadedFile.path },
+                })
+            } else if (model === 'song') {
+                updatedRecord = await prisma.song.update({
+                    where: { id: modelId },
+                    data: { [collection]: uploadedFile.path },
+                })
+            }
 
             return ApiResponse.success({
                 path: uploadedFile.path,
@@ -66,18 +120,13 @@ export default eventHandler({
                 size: uploadedFile.size,
                 mimetype: uploadedFile.mimetype,
                 collection,
-            }, `${collection} uploaded successfully`, 201)
+                model,
+                modelId,
+                record: updatedRecord,
+            }, `${collection} uploaded and saved successfully`, 201)
         } catch (e: any) {
             console.error('Upload error:', e)
             return ApiResponse.error(500, `Failed to upload ${collection}`)
         }
     },
 })
-
-export type MediaUploadResponse = {
-    path: string
-    filename: string
-    size: number
-    mimetype: string
-    collection: Collection
-}

@@ -1,4 +1,4 @@
-import prisma from "./Connection";
+import prisma from "./prisma";
 import { Prisma, type User } from "@prisma/client";
 
 export type CreateUserData = Omit<Prisma.UserUncheckedCreateInput,
