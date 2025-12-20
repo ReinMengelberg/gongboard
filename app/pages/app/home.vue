@@ -22,7 +22,7 @@ const isDark = computed(() => colorMode.value === 'dark')
   <Card class="relative mx-auto w-[80vw] h-[80vh]">
     <CardHeader class="flex flex-col items-center gap-6">
       <img :src="isDark ? gongboardLight : gongboardDark" alt="Logo" class="h-20 w-120" />
-      <CardTitle class="text-primary text-center text-3xl font-medium">
+      <CardTitle class="text-primary text-center text-2xl font-medium">
         Welcome back<span v-if="auth.user?.name">, {{ auth.user.name }}</span>
       </CardTitle>
     </CardHeader>
