@@ -18,72 +18,76 @@ const bodySchema = z.object({
 export default eventHandler({
     onRequest: [authenticated],
     handler: async (event) => {
-        const idParam = getRouterParam(event, 'user_id')
-        const id = idParam ? Number(idParam) : NaN
-
-        if (!idParam || Number.isNaN(id)) {
-            return ApiResponse.error(400, 'Invalid user id')
-        }
-
-        // AuthZ: determine acting user and permissions
-        const session = await getUserSession(event)
-        const actor = session?.user as { id: number; admin?: boolean } | undefined
-        if (!actor?.id) {
-            return ApiResponse.error(401, 'Unauthorized')
-        }
-        const isAdmin = !!actor.admin
-        const isSelf = actor.id === id
-        if (!isAdmin && !isSelf) {
-            return ApiResponse.error(403, 'Forbidden')
-        }
-
-        const body = await readValidatedBody(event, bodySchema.parse)
-        const data: any = { ...body }
-
-        // Non-admins cannot escalate privileges
-        if (!isAdmin && 'admin' in data) {
-            delete data.admin
-        }
-
-        // Handle password change if any of the password-related fields are present
-        const confirm = (body as any).new_password_confirm ?? (body as any).confirm_password
-        const wantsPasswordChange = !!(body.old_password || body.new_password || confirm)
-
-        if (wantsPasswordChange) {
-            if (!body.new_password || !confirm) {
-                return ApiResponse.error(400, 'New password and confirmation are required')
-            }
-            if (body.new_password !== confirm) {
-                return ApiResponse.error(400, 'New passwords do not match')
-            }
-            // Hash password using Laravel-style method
-            data.password = await Hash.make(body.new_password)
-        }
-
-        // Remove transient fields so they are not persisted
-        delete data.old_password
-        delete (data as any).new_password
-        delete (data as any).new_password_confirm
-        delete (data as any).confirm_password
-
         try {
+            const idParam = getRouterParam(event, 'user_id')
+            const id = idParam ? Number(idParam) : NaN
+
+            if (!idParam || Number.isNaN(id)) {
+                return ApiResponse.error(400, 'Invalid user id')
+            }
+
             // Check if user exists
-            const existingUser = await User.find(id)
-            if (!existingUser) {
+            const targetUser: User|null = await User.find(id)
+            if (!targetUser) {
                 return ApiResponse.error(404, 'User not found')
             }
 
-            // Update user using Laravel-style method
+            // Authorization check
+            const auth = await Auth.user(event)
+            if (!auth?.can('update', targetUser)) {
+                return ApiResponse.error(403, 'Forbidden')
+            }
+
+            // Validation
+            const body = await readValidatedBody(event, bodySchema.parse)
+            const data: any = { ...body }
+
+            // Non-admins cannot escalate privileges
+            if (!auth.admin && 'admin' in data) {
+                delete data.admin
+            }
+
+            // Handle password change
+            const confirm = (body as any).new_password_confirm ?? (body as any).confirm_password
+            const wantsPasswordChange = !!(body.old_password || body.new_password || confirm)
+            if (wantsPasswordChange) {
+                if (!body.new_password || !confirm) {
+                    return ApiResponse.error(400, 'New password and confirmation are required')
+                }
+                if (body.new_password !== confirm) {
+                    return ApiResponse.error(400, 'New passwords do not match')
+                }
+                data.password = await Hash.make(body.new_password)
+            }
+
+            // Remove transient fields
+            delete data.old_password
+            delete (data as any).new_password
+            delete (data as any).new_password_confirm
+            delete (data as any).confirm_password
+
+            // Check for email uniqueness if email is being changed
+            if (data.email && data.email !== targetUser.email) {
+                const existingUser = await User.where({ email: data.email }).first()
+                if (existingUser) {
+                    return ApiResponse.error(409, 'A user with the provided email already exists.')
+                }
+            }
+
+            // Update user
             const user = await User.update(id, data)
 
-            // Return user without password
             return ApiResponse.success(user, 'User updated')
         } catch (e: any) {
+            if (e instanceof z.ZodError) {
+                return ApiResponse.error(422, 'Validation failed', e.errors);
+            }
             const msg = (e?.message || '').toLowerCase()
             if (msg.includes('unique constraint')) {
                 return ApiResponse.error(409, 'A user with the provided unique field already exists.')
             }
-            return ApiResponse.error(400, 'Failed to update user')
+            console.error('Failed to update user:', e)
+            return ApiResponse.error(500, 'Failed to update user')
         }
     },
 })

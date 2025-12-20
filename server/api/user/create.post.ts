@@ -1,41 +1,48 @@
-import { z } from 'zod'
-import { ApiResponse } from "~~/server/http/utils/ApiResponse";
-import { User } from "~~/server/models/User";
+import {z} from 'zod'
+import {ApiResponse} from "~~/server/http/utils/ApiResponse";
+import {User} from "~~/server/models/User";
 import authenticated from "~~/server/http/middleware/authenticated";
 
 const bodySchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  password: z.string().min(8),
-  admin: z.boolean().optional().default(false),
+    name: z.string().min(1),
+    email: z.string().email(),
+    password: z.string().min(8),
+    admin: z.boolean().optional().default(false),
 })
 
 export default eventHandler({
-  onRequest: [authenticated],
-  handler: async (event) => {
-    const { name, email, password, admin } = await readValidatedBody(event, bodySchema.parse)
+    onRequest: [authenticated],
+    handler: async (event) => {
 
-    try {
-      const existingUser = await User.where({ email }).first()
-      if (existingUser) {
-        return ApiResponse.error(409, 'A user with the provided email already exists.')
-      }
+        try {
+            const auth = await Auth.user(event)
+            if (!auth?.can('create', new User())) {
+                return ApiResponse.error(403, 'Forbidden');
+            }
 
-      const hashedPassword = await Hash.make(password)
-      const user = await User.create({
-        name,
-        email,
-        password: hashedPassword,
-        admin: admin,
-      })
+            // Validation
+            const {name, email, password, admin} = await readValidatedBody(event, bodySchema.parse)
+            const existingUser = await User.where({email}).first()
+            if (existingUser) {
+                return ApiResponse.error(409, 'A user with the provided email already exists.')
+            }
 
-      return ApiResponse.success(user, 'User created', 201)
-    } catch (e: any) {
-      const msg = (e?.message || '').toLowerCase()
-      if (msg.includes('unique constraint')) {
-        return ApiResponse.error(409, 'A user with the provided unique field already exists.')
-      }
-      return ApiResponse.error(400, 'Failed to create user')
-    }
-  },
+            // Create user
+            const hashedPassword = await Hash.make(password)
+            const user = await User.create({
+                name,
+                email,
+                password: hashedPassword,
+                admin: admin,
+            })
+
+            return ApiResponse.success(user, 'User created', 201)
+        } catch (e: any) {
+            const msg = (e?.message || '').toLowerCase()
+            if (msg.includes('unique constraint')) {
+                return ApiResponse.error(409, 'A user with the provided unique field already exists.')
+            }
+            return ApiResponse.error(400, 'Failed to create user')
+        }
+    },
 })

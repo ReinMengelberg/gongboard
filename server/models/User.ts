@@ -28,9 +28,7 @@ export interface User {
     updated_at: string;
 }
 
-const ModelWithTraits = HasMedia(Model);
-
-export class User extends ModelWithTraits {
+export class User extends HasMedia(Model) {
     protected static modelName = "User";
     protected static policy = UserPolicy
 
@@ -83,16 +81,17 @@ export class User extends ModelWithTraits {
     /**
      * Authorization
      */
-    public can(permission: string, model: typeof Model): boolean {
-        const policy = model.getPolicy();
+    public can(permission: string, instance: Model): boolean {
+        const modelClass = instance.constructor as typeof Model;
+        const policy = modelClass.getPolicy();
         if (!policy) {
-            throw new Error(`No policy found for model ${model.name}`);
+            throw new Error(`No policy found for model ${modelClass.name}`);
         }
         const policyInstance = new policy();
         if (typeof policyInstance[permission] !== 'function') {
-            throw new Error(`Permission method '${permission}' not found in policy for ${model.name}`);
+            throw new Error(`Permission method '${permission}' not found in policy for ${modelClass.name}`);
         }
-        return policyInstance[permission](this);
+        return policyInstance[permission](this, instance);
     }
 
     /**
