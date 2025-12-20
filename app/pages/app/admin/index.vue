@@ -18,7 +18,7 @@ definePageMeta({
         <CardTitle>Admin Interface</CardTitle>
       </div>
     </CardHeader>
-    <CardContent>
+    <CardContent class="space-y-4">
 
       <NuxtLink to="/app/admin/users" class="group block">
         <Card class="h-full transition-all duration-200 group-hover:border-primary/50 group-hover:bg-accent/50 group-hover:shadow-md">
@@ -29,6 +29,21 @@ definePageMeta({
             <div class="flex-1">
               <h3 class="font-semibold leading-none tracking-tight">Users</h3>
               <p class="mt-1 text-sm text-muted-foreground">Manage users and permissions</p>
+            </div>
+            <i class="ri-arrow-right-s-line text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" aria-hidden="true" />
+          </div>
+        </Card>
+      </NuxtLink>
+
+      <NuxtLink to="/app/admin/webhooks" class="group block">
+        <Card class="h-full transition-all duration-200 group-hover:border-primary/50 group-hover:bg-accent/50 group-hover:shadow-md">
+          <div class="flex items-center gap-4 py-2 px-6">
+            <div class="flex h-12 w-12 items-center justify-center rounded-lg border bg-background transition-colors group-hover:text-primary">
+              <i class="ri-webhook-line text-2xl" aria-hidden="true" />
+            </div>
+            <div class="flex-1">
+              <h3 class="font-semibold leading-none tracking-tight">Webhooks</h3>
+              <p class="mt-1 text-sm text-muted-foreground">Show endpoints where requests can be made to</p>
             </div>
             <i class="ri-arrow-right-s-line text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" aria-hidden="true" />
           </div>
