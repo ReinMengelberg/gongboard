@@ -27,7 +27,7 @@ const isDark = computed(() => colorMode.value === 'dark')
       </CardTitle>
     </CardHeader>
 
-    <CardContent class="h-full px-60 space-y-10">
+    <CardContent class="h-full px-90 space-y-10">
       <div class="rounded-lg overflow-hidden shadow-lg border-2">
         <img :src="putfasdGif" alt="jordan" class="object-cover w-full h-full">
       </div>

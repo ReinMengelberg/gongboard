@@ -11,7 +11,7 @@ useHead(() => ({
 </script>
 
 <template>
-  <ColorModeToggle class="absolute bottom-6 left-6 z-50" />
+  <ColorModeToggle class="absolute top-6 left-6 z-50" />
   <slot></slot>
   <NotificationComponent />
 </template>
