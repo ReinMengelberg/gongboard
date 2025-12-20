@@ -7,10 +7,15 @@ export default eventHandler({
     handler: async (event) => {
         try {
             const idParam = getRouterParam(event, 'user_id')
+            const collectionParam = getRouterParam(event, 'collection')
             const id = idParam ? Number(idParam) : NaN
 
             if (!idParam || Number.isNaN(id)) {
                 return ApiResponse.error(400, 'Invalid user id')
+            }
+
+            if (!collectionParam) {
+                return ApiResponse.error(400, 'Missing collection parameter')
             }
 
             // Check if user exists
@@ -25,28 +30,26 @@ export default eventHandler({
                 return ApiResponse.error(403, 'Forbidden')
             }
 
+            // Validate field is configured
+            const collection = User.mediaCollections().find(f => f.field === collectionParam)
+            if (!collection) {
+                return ApiResponse.error(400, `Invalid media collection: ${collectionParam}`)
+            }
+
             // Parse multipart form data
             const form = await readMultipartFormData(event)
             if (!form) {
                 return ApiResponse.error(400, 'No file uploaded')
             }
 
-            // Extract field name and file
-            const fieldEntry = form.find(item => item.name === 'field')
+            // Extract file
             const fileEntry = form.find(item => item.name === 'file')
-
-            if (!fieldEntry || !fileEntry) {
-                return ApiResponse.error(400, 'Missing field name or file')
+            if (!fileEntry) {
+                return ApiResponse.error(400, 'Missing file')
             }
 
-            const field = fieldEntry.data.toString('utf-8')
             const filename = fileEntry.filename || 'upload'
-
-            // Validate field is configured
-            const collection = User.mediaCollections().find(f => f.field === field)
-            if (!collection) {
-                return ApiResponse.error(400, `Invalid media field: ${field}`)
-            }
+            const contentType = fileEntry.type
 
             // Validate file type
             const fileExt = filename.includes('.')
@@ -57,9 +60,9 @@ export default eventHandler({
                 if (acceptType.endsWith('/*')) {
                     // Handle wildcards like 'image/*'
                     const category = acceptType.split('/')[0]
-                    return fileEntry.type?.startsWith(category + '/') ?? false
+                    return contentType?.startsWith(category + '/') ?? false
                 }
-                return acceptType === fileExt || fileEntry.type === acceptType
+                return acceptType === fileExt || contentType === acceptType
             })
 
             if (!isValidType) {
@@ -73,14 +76,24 @@ export default eventHandler({
             }
 
             // Save media
-            const mediaPath = await User.saveMedia(id, field, fileEntry.data, filename)
+            const mediaPath = await User.saveMedia(
+                id,
+                collectionParam,
+                fileEntry.data,
+                filename,
+                contentType
+            )
 
             // Get updated user
             const updatedUser = await User.find(id)
 
+            // Generate signed URL for immediate access
+            const signedUrl = await User.getSignedUrl(updatedUser, collectionParam, 3600)
+
             return ApiResponse.success({
                 user: updatedUser,
-                mediaPath
+                mediaPath,
+                signedUrl
             }, 'Media uploaded successfully')
 
         } catch (e: any) {

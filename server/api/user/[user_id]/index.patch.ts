@@ -27,7 +27,7 @@ export default eventHandler({
             }
 
             // Check if user exists
-            const targetUser: User|null = await User.find(id)
+            const targetUser = await User.find(id)
             if (!targetUser) {
                 return ApiResponse.error(404, 'User not found')
             }

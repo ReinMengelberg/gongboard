@@ -152,23 +152,21 @@ export abstract class Model {
     /**
      * Create instance without saving
      */
-    public static make(attributes: Record<string, any> = {}): InstanceType<typeof this> {
-        // @ts-ignore
+    public static make<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, attributes: Record<string, any> = {}): T {
         return new this(attributes)
     }
 
     /**
      * Hydrate plain object into model instance
      */
-    protected static hydrate(data: Record<string, any>): InstanceType<typeof this> {
-        // @ts-ignore
+    protected static hydrate<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, data: Record<string, any>): T {
         return new this(data)
     }
 
     /**
      * Hydrate array of objects
      */
-    protected static hydrateMany(data: Record<string, any>[]): InstanceType<typeof this>[] {
+    protected static hydrateMany<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, data: Record<string, any>[]): T[] {
         return data.map(item => this.hydrate(item))
     }
 
@@ -211,11 +209,11 @@ export abstract class Model {
         return this
     }
 
-    public static query(): QueryBuilder<InstanceType<typeof this>> {
+    public static query<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model): QueryBuilder<T> {
         return new QueryBuilder(this.getModel(), this)
     }
 
-    public static async create(data: any): Promise<InstanceType<typeof this>> {
+    public static async create<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, data: any): Promise<T> {
         const filteredData = this.filterFillable(data)
         const result = await this.getModel().create({ data: filteredData })
         const processed = this.removeHidden(result)
@@ -223,14 +221,14 @@ export abstract class Model {
         return this.hydrate(processed as Record<string, any>)
     }
 
-    public static async forceCreate(data: any): Promise<InstanceType<typeof this>> {
+    public static async forceCreate<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, data: any): Promise<T> {
         const result = await this.getModel().create({ data })
         const processed = this.removeHidden(result)
         this.resetVisible()
         return this.hydrate(processed as Record<string, any>)
     }
 
-    public static async find(id: number | string): Promise<InstanceType<typeof this> | null> {
+    public static async find<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, id: number | string): Promise<T | null> {
         const result = await this.getModel().findUnique({ where: { id } })
         if (!result) {
             this.resetVisible()
@@ -241,7 +239,7 @@ export abstract class Model {
         return this.hydrate(processed as Record<string, any>)
     }
 
-    public static async findOrFail(id: number | string): Promise<InstanceType<typeof this>> {
+    public static async findOrFail<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, id: number | string): Promise<T> {
         const result = await this.find(id)
         if (!result) {
             throw new Error(`${this.modelName} not found with id ${id}`)
@@ -249,14 +247,14 @@ export abstract class Model {
         return result
     }
 
-    public static async findMany(where?: any, include?: any): Promise<InstanceType<typeof this>[]> {
+    public static async findMany<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, where?: any, include?: any): Promise<T[]> {
         const result = await this.getModel().findMany({ where, include })
         const processed = this.removeHiddenFromArray(result)
         this.resetVisible()
         return this.hydrateMany(processed as Record<string, any>[])
     }
 
-    public static async update(id: number | string, data: any): Promise<InstanceType<typeof this>> {
+    public static async update<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, id: number | string, data: any): Promise<T> {
         const filteredData = this.filterFillable(data)
         const result = await this.getModel().update({ where: { id }, data: filteredData })
         const processed = this.removeHidden(result)
@@ -264,7 +262,7 @@ export abstract class Model {
         return this.hydrate(processed as Record<string, any>)
     }
 
-    public static async forceUpdate(id: number | string, data: any): Promise<InstanceType<typeof this>> {
+    public static async forceUpdate<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, id: number | string, data: any): Promise<T> {
         const result = await this.getModel().update({ where: { id }, data })
         const processed = this.removeHidden(result)
         this.resetVisible()
@@ -280,7 +278,7 @@ export abstract class Model {
         await this.deleteById(id)
     }
 
-    public static async first(where?: any): Promise<InstanceType<typeof this> | null> {
+    public static async first<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, where?: any): Promise<T | null> {
         const result = await this.getModel().findFirst({ where })
         if (!result) {
             this.resetVisible()
@@ -291,7 +289,7 @@ export abstract class Model {
         return this.hydrate(processed as Record<string, any>)
     }
 
-    public static async all(): Promise<InstanceType<typeof this>[]> {
+    public static async all<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model): Promise<T[]> {
         return this.findMany()
     }
 
@@ -299,15 +297,15 @@ export abstract class Model {
         return await this.getModel().count({ where })
     }
 
-    public static where(conditions: any): QueryBuilder<InstanceType<typeof this>> {
+    public static where<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, conditions: any): QueryBuilder<T> {
         return this.query().where(conditions)
     }
 
-    public static with(relations: any): QueryBuilder<InstanceType<typeof this>> {
+    public static with<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, relations: any): QueryBuilder<T> {
         return this.query().with(relations)
     }
 
-    public static orderBy(order: any): QueryBuilder<InstanceType<typeof this>> {
+    public static orderBy<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, order: any): QueryBuilder<T> {
         return this.query().orderBy(order)
     }
 }
