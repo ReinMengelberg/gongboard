@@ -42,10 +42,6 @@ export class User extends ModelWithTraits {
         return await this.first<PrismaUser>({ email });
     }
 
-    public static async withPosts() {
-        return this.with({ posts: true });
-    }
-
     /**
      * Relations
      */
@@ -91,21 +87,27 @@ export class User extends ModelWithTraits {
      */
     // Authentication methods
     public static async authenticate(email: string, password: string): Promise<PrismaUser | null> {
-        const user = await this.findByEmail(email);
-
-        if (!user || !await bcrypt.compare(password, user.password)) {
+        const user = await this.makeVisible('password').where({ email }).first() as (PrismaUser & { password: string }) | null;
+        if (!user || !user.password || !await bcrypt.compare(password, user.password)) {
             return null;
         }
-
         return user;
     }
 
-    public static async hashPassword(password: string): Promise<string> {
-        return await bcrypt.hash(password, 10);
+    public async validatePassword(password: string): Promise<boolean> {
+        const userWithPassword = await User.makeVisible('password').where({ id: this.id }).first() as (PrismaUser & { password: string }) | null;
+        if (!userWithPassword || !userWithPassword.password) {
+            return false;
+        }
+        return await bcrypt.compare(password, userWithPassword.password);
     }
 
     public static async verifyUser(userId: number): Promise<void> {
         await this.update(userId, { verified_at: new Date().toISOString() });
+    }
+
+    public static async hashPassword(password: string): Promise<string> {
+        return await bcrypt.hash(password, 10);
     }
 }
 

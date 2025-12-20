@@ -14,7 +14,9 @@ export default defineNuxtConfig({
         ],
     },
 
-// ... existing code ...
+    routeRules: {
+        '/': { redirect: '/app/home' },
+    },
 
     modules: [
         'shadcn-nuxt',

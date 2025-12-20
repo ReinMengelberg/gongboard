@@ -37,9 +37,7 @@ export abstract class Model {
     }
 
     public static makeVisible(fields: string | string[]): typeof Model {
-        const fieldsArray = Array.isArray(fields) ? fields : [fields];
-        // @ts-ignore - Return the class itself for chaining
-        this.visibleFields = fieldsArray;
+        this.visibleFields = Array.isArray(fields) ? fields : [fields];
         return this;
     }
 
