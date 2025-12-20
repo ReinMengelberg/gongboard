@@ -1,13 +1,12 @@
 import { Model } from "~~/server/models/BaseModel";
 import { HasMedia } from "~~/server/traits/HasMedia";
+import type {H3Event} from "h3";
 import type { MediaCollection } from "~~/server/traits/HasMedia";
-import type { User as PrismaUser } from "@prisma/client";
-import bcrypt from 'bcryptjs';
+import {Hash} from "~~/server/utils/Hash";
 import {Lost} from "~~/server/models/Lost";
 import {Lead} from "~~/server/models/Lead";
 import {Meeting} from "~~/server/models/Meeting";
 import {Sale} from "~~/server/models/Sale";
-import type {H3Event} from "h3";
 
 export interface User {
     id: number;

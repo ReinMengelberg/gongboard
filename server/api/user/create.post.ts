@@ -1,7 +1,6 @@
 import { z } from 'zod'
 import { ApiResponse } from "~~/server/http/utils/ApiResponse";
 import { User } from "~~/server/models/User";
-import admin from "~~/server/http/middleware/admin";
 
 const bodySchema = z.object({
   name: z.string().min(1),

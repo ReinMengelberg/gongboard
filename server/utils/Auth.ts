@@ -1,7 +1,7 @@
 import type { H3Event } from 'h3'
 import { User } from '~~/server/models/User'
 import type {User as PrismaUser} from "@prisma/client";
-import bcrypt from "bcryptjs";
+import { Hash } from '~~/server/utils/Hash'
 
 export class Auth {
 
@@ -26,9 +26,9 @@ export class Auth {
     }
 
     /**
-     * Validate a password against the authenticated users hashed password'
+     * Validate a password against the authenticated users hashed password
      */
-    static async validatePassword(password: string): Promise<boolean> {
+    static async validatePassword(event: H3Event, password: string): Promise<boolean> {
         const session = await getUserSession(event)
         const sessionUser = session?.user as { id: number } | undefined
         const user = await User.makeVisible('password').where({ id: sessionUser?.id }).first() as (PrismaUser & { password: string }) | null;
