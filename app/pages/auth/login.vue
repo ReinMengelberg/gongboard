@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { toTypedSchema } from '@vee-validate/zod'
-import { useForm } from 'vee-validate'
+import {toTypedSchema} from '@vee-validate/zod'
+import {useForm} from 'vee-validate'
 import * as z from 'zod'
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import {Input} from "@/components/ui/input"
+import {Button} from "@/components/ui/button"
 import {
   FormControl,
   FormField,
@@ -12,7 +12,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import PasswordInput from "@/components/views/form/PasswordInput.vue"
-import { useAuthStore } from "~/stores/AuthStore"
+import {useAuthStore} from "~/stores/AuthStore"
 
 definePageMeta({
   layout: "auth",
@@ -42,12 +42,12 @@ const onSubmit = form.handleSubmit(async (values) => {
 <template>
   <div class="mx-auto grid gap-6">
     <div class="grid gap-2 text-center">
-      <img src="../../public/gongboard_dark.png" alt="Logo" class="block mx-auto h-28 w-full" />
-      <h1 class="text-3xl font-bold">Login</h1>
-      <p class="text-balance text-muted-foreground">
+      <h1 class="text-2xl font-bold">Login</h1>
+      <p class="text-sm text-balance text-muted-foreground">
         Enter your email below to login to your account
       </p>
     </div>
+
 
     <form class="grid gap-4" @submit="onSubmit">
       <FormField v-slot="{ componentField }" name="email">
@@ -60,7 +60,7 @@ const onSubmit = form.handleSubmit(async (values) => {
                 v-bind="componentField"
             />
           </FormControl>
-          <FormMessage />
+          <FormMessage/>
         </FormItem>
       </FormField>
 
@@ -81,7 +81,7 @@ const onSubmit = form.handleSubmit(async (values) => {
                 v-bind="componentField"
             />
           </FormControl>
-          <FormMessage />
+          <FormMessage/>
         </FormItem>
       </FormField>
 

@@ -1,7 +1,11 @@
+
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/AuthStore'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import gongboardLight from '~/public/gongboard_light.png'
+import gongboardDark from '~/public/gongboard_dark.png'
+import putfasdGif from '~/public/putfasd.gif'
 
 definePageMeta({
   layout: 'home',
@@ -17,17 +21,15 @@ const isDark = computed(() => colorMode.value === 'dark')
 <template>
   <Card class="relative mx-auto w-[80vw] h-[80vh]">
     <CardHeader class="flex flex-col items-center gap-6">
-      <img src="../../public/gongboard_dark.png.png" alt="Logo" class="h-20 w-120" />
+      <img :src="isDark ? gongboardLight : gongboardDark" alt="Logo" class="h-20 w-120" />
       <CardTitle class="text-primary text-center text-3xl font-medium">
         Welcome back<span v-if="auth.user?.name">, {{ auth.user.name }}</span>
       </CardTitle>
     </CardHeader>
 
-
-
     <CardContent class="h-full px-60 space-y-10">
       <div class="rounded-lg overflow-hidden shadow-lg border-2">
-        <img src="../../public/putfasd.gif" alt="jordan" class="object-cover w-full h-full">
+        <img :src="putfasdGif" alt="jordan" class="object-cover w-full h-full">
       </div>
       <NuxtLink to="/app/dashboard" class="group block">
         <Card class="h-full transition-all duration-200 group-hover:border-primary/50 group-hover:bg-accent/50 group-hover:shadow-md">
