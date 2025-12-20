@@ -14,7 +14,7 @@ function toggleDarkMode(checked: boolean) {
 <template>
   <div class="flex items-center space-x-2">
     <ClientOnly>
-      <i class="ri-sun-line text-muted-foreground" :class="{ 'text-foreground': !isDark }" />
+      <i class="ri-sun-line" :class="{ 'text-foreground': !isDark }" />
 
       <Switch
           id="dark-mode"
@@ -22,7 +22,7 @@ function toggleDarkMode(checked: boolean) {
           @update:model-value="toggleDarkMode"
       />
 
-      <i class="ri-moon-line text-muted-foreground" :class="{ 'text-foreground': isDark }" />
+      <i class="ri-moon-line" :class="{ 'text-foreground': isDark }" />
 
     </ClientOnly>
     <Label for="dark-mode">Dark Mode</Label>

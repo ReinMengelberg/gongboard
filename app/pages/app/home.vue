@@ -9,13 +9,15 @@ definePageMeta({
 })
 
 const auth = useAuthStore()
+const colorMode = useColorMode()
+const isDark = computed(() => colorMode.value === 'dark')
 
 </script>
 
 <template>
   <Card class="relative mx-auto w-[80vw] h-[80vh]">
     <CardHeader class="flex flex-col items-center gap-6">
-      <img src="../../public/gongboard.png" alt="Logo" class="h-20 w-120" />
+      <img src="../../public/gongboard_dark.png.png" alt="Logo" class="h-20 w-120" />
       <CardTitle class="text-primary text-center text-3xl font-medium">
         Welcome back<span v-if="auth.user?.name">, {{ auth.user.name }}</span>
       </CardTitle>
