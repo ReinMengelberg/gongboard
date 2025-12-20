@@ -23,8 +23,24 @@ const auth = useAuthStore()
 
 
 
-    <CardContent class="h-full">
-      LETSGO!
+    <CardContent class="h-full px-60 space-y-10">
+      <div class="rounded-lg overflow-hidden shadow-lg border-2">
+        <img src="../../public/putfasd.gif" alt="jordan" class="object-cover w-full h-full">
+      </div>
+      <NuxtLink to="/app/dashboard" class="group block">
+        <Card class="h-full transition-all duration-200 group-hover:border-primary/50 group-hover:bg-accent/50 group-hover:shadow-md">
+          <div class="flex items-center gap-4 py-2 px-6">
+            <div class="flex h-12 w-12 items-center justify-center rounded-lg border bg-background transition-colors group-hover:text-primary">
+              <i class="ri-rocket-2-line text-2xl" aria-hidden="true" />
+            </div>
+            <div class="flex-1">
+              <h3 class="font-semibold leading-none tracking-tight">Dashboard</h3>
+              <p class="mt-1 text-sm text-muted-foreground">Overview current sales activity</p>
+            </div>
+            <i class="ri-arrow-right-s-line text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" aria-hidden="true" />
+          </div>
+        </Card>
+      </NuxtLink>
     </CardContent>
 
     <CardFooter class="gap-3 items-center border-t pt-4">
