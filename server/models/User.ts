@@ -1,36 +1,32 @@
-import { Model } from "~~/server/models/BaseModel";
-import { HasMedia } from "~~/server/traits/HasMedia";
-import type {H3Event} from "h3";
-import type { MediaCollection } from "~~/server/traits/HasMedia";
-import {Lost} from "~~/server/models/Lost";
-import {Lead} from "~~/server/models/Lead";
-import {Meeting} from "~~/server/models/Meeting";
-import {Sale} from "~~/server/models/Sale";
-import UserPolicy from "~~/server/policies/UserPolicy";
-
-export interface User {
-    id: number;
-    name: string;
-    email: string;
-    admin: boolean;
-    avatar: string | string[];
-    sound: string | string[];
-    drop: number;
-    verified_at: string;
-
-    // Relations
-    lost: Lost[];
-    leads: Lead[];
-    meetings: Meeting[];
-    sales: Sale[];
-
-    created_at: string;
-    updated_at: string;
-}
+import { Model } from "~~/server/models/BaseModel"
+import type { User as PrismaUser } from '@prisma/client'
+import { HasMedia } from "~~/server/traits/HasMedia"
+import type { H3Event } from "h3"
+import type { MediaCollection } from "~~/server/traits/HasMedia"
+import { Lost } from "~~/server/models/Lost"
+import { Lead } from "~~/server/models/Lead"
+import { Meeting } from "~~/server/models/Meeting"
+import { Sale } from "~~/server/models/Sale"
+import UserPolicy from "~~/server/policies/UserPolicy"
 
 export class User extends HasMedia(Model) {
-    protected static modelName = "User";
+    protected static modelName = "User"
     protected static policy = UserPolicy
+
+    declare id: number
+    declare name: string
+    declare email: string
+    declare admin: boolean
+    declare avatar: string | string[]
+    declare sound: string | string[]
+    declare drop: number
+    declare verified_at: string
+    declare created_at: string
+    declare updated_at: string
+    declare lost?: Lost[]
+    declare leads?: Lead[]
+    declare meetings?: Meeting[]
+    declare sales?: Sale[]
 
     protected static override fillable = [
         'name',
@@ -43,14 +39,21 @@ export class User extends HasMedia(Model) {
 
     protected static override hidden = [
         'password'
-    ];
+    ]
 
     /**
-     * Functions
+     * Instance method to verify this user
      */
+    public async verify(): Promise<void> {
+        this.verified_at = new Date().toISOString()
+        await this.save()
+    }
 
+    /**
+     * Static method to verify a user by ID
+     */
     public static async verifyUser(userId: number): Promise<void> {
-        await this.update(userId, { verified_at: new Date().toISOString() });
+        await this.update(userId, { verified_at: new Date().toISOString() })
     }
 
     static async isAdmin(event: H3Event): Promise<boolean> {
@@ -60,38 +63,19 @@ export class User extends HasMedia(Model) {
     }
 
     /**
-     * Relation getters
-     */
-    public async getLost() {
-        return this.with({ lost: true }).first({ id: this.id });
-    }
-
-    public async getLeads() {
-        return this.with({ leads: true }).first({ id: this.id });
-    }
-
-    public async getMeetings() {
-        return this.with({ meetings: true }).first({ id: this.id });
-    }
-
-    public async getSales() {
-        return this.with({ meetings: true }).first({ id: this.id });
-    }
-
-    /**
      * Authorization
      */
     public can(permission: string, instance: Model): boolean {
-        const modelClass = instance.constructor as typeof Model;
-        const policy = modelClass.getPolicy();
+        const modelClass = instance.constructor as typeof Model
+        const policy = modelClass.getPolicy()
         if (!policy) {
-            throw new Error(`No policy found for model ${modelClass.name}`);
+            throw new Error(`No policy found for model ${modelClass.name}`)
         }
-        const policyInstance = new policy();
+        const policyInstance = new policy()
         if (typeof policyInstance[permission] !== 'function') {
-            throw new Error(`Permission method '${permission}' not found in policy for ${modelClass.name}`);
+            throw new Error(`Permission method '${permission}' not found in policy for ${modelClass.name}`)
         }
-        return policyInstance[permission](this, instance);
+        return policyInstance[permission](this, instance)
     }
 
     /**
@@ -102,16 +86,16 @@ export class User extends HasMedia(Model) {
             {
                 field: 'avatar',
                 accept: ['image/*'],
-                maxSize: 10, // 10MB
+                maxSize: 10,
                 singleFile: true
             },
             {
                 field: 'sound',
                 accept: ['mp3'],
-                maxSize: 10, // 10MB
+                maxSize: 10,
                 singleFile: false
             }
-        ];
+        ]
     }
 }
 
@@ -120,7 +104,7 @@ export class User extends HasMedia(Model) {
  */
 
 declare module '#auth-utils' {
-    interface User extends User {}
+    interface User extends PrismaUser {}
 
     interface UserSession {
         extendedAt: number

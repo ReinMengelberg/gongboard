@@ -7,7 +7,7 @@ export class Auth {
 
     static async challenge(email: string, password: string): Promise<PrismaUser | null> {
         const user = await User.makeVisible('password').where({ email }).first() as (PrismaUser & { password: string }) | null;
-        if (!user || !user.password || !await bcrypt.compare(password, user.password)) {
+        if (!user || !user.password || !await Hash.compare(password, user.password)) {
             return null;
         }
         return user;
@@ -22,7 +22,7 @@ export class Auth {
         if (!sessionUser?.id) {
             return null
         }
-        return await User.find<User>(sessionUser.id)
+        return await User.find(sessionUser.id) as User | null
     }
 
     /**
@@ -31,8 +31,8 @@ export class Auth {
     static async validatePassword(event: H3Event, password: string): Promise<boolean> {
         const session = await getUserSession(event)
         const sessionUser = session?.user as { id: number } | undefined
-        const user = await User.makeVisible('password').where({ id: sessionUser?.id }).first() as (PrismaUser & { password: string }) | null;
-        if (!user || !user.password) {
+        const userWithPassword = await User.makeVisible('password').where({ id: sessionUser?.id }).first() as (PrismaUser & { password: string }) | null;
+        if (!userWithPassword || !userWithPassword.password) {
             return false;
         }
         return await Hash.compare(password, userWithPassword.password);
@@ -43,6 +43,6 @@ export class Auth {
      */
     static async check(event: H3Event): Promise<boolean> {
         const session = await getUserSession(event)
-        return session.user !== null
+        return !!session?.user?.id
     }
 }
