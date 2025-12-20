@@ -3,12 +3,11 @@ import { HasMedia } from "~~/server/traits/HasMedia";
 import type { MediaCollection } from "~~/server/traits/HasMedia";
 import type { User as PrismaUser } from "@prisma/client";
 import bcrypt from 'bcryptjs';
-import {Lost} from "~~/types/models/tracking/Lost";
-import {Lead} from "~~/types/models/tracking/Lead";
-import {Meeting} from "~~/types/models/tracking/Meeting";
-import {Sale} from "~~/types/models/tracking/Sale";
-
-const ModelWithTraits = HasMedia(Model);
+import {Lost} from "~~/server/models/Lost";
+import {Lead} from "~~/server/models/Lead";
+import {Meeting} from "~~/server/models/Meeting";
+import {Sale} from "~~/server/models/Sale";
+import type {H3Event} from "h3";
 
 export interface User {
     id: number;
@@ -30,20 +29,40 @@ export interface User {
     updated_at: string;
 }
 
+const ModelWithTraits = HasMedia(Model);
+
 export class User extends ModelWithTraits {
     protected static modelName = "User";
-    protected static override hidden = ['password'];
+
+    protected static override fillable = [
+        'name',
+        'email',
+        'password',
+        'drop',
+        'avatar',
+        'sound',
+    ]
+
+    protected static override hidden = [
+        'password'
+    ];
 
     /**
      * Functions
      */
 
-    public static async findByEmail(email: string): Promise<PrismaUser | null> {
-        return await this.first<PrismaUser>({ email });
+    public static async verifyUser(userId: number): Promise<void> {
+        await this.update(userId, { verified_at: new Date().toISOString() });
+    }
+
+    static async isAdmin(event: H3Event): Promise<boolean> {
+        const session = await getUserSession(event)
+        const sessionUser = session?.user as { admin?: boolean } | undefined
+        return sessionUser?.admin ?? false
     }
 
     /**
-     * Relations
+     * Relation getters
      */
     public async getLost() {
         return this.with({ lost: true }).first({ id: this.id });
@@ -80,34 +99,6 @@ export class User extends ModelWithTraits {
                 singleFile: false
             }
         ];
-    }
-
-    /**
-     * Authentication Methods
-     */
-    // Authentication methods
-    public static async authenticate(email: string, password: string): Promise<PrismaUser | null> {
-        const user = await this.makeVisible('password').where({ email }).first() as (PrismaUser & { password: string }) | null;
-        if (!user || !user.password || !await bcrypt.compare(password, user.password)) {
-            return null;
-        }
-        return user;
-    }
-
-    public async validatePassword(password: string): Promise<boolean> {
-        const userWithPassword = await User.makeVisible('password').where({ id: this.id }).first() as (PrismaUser & { password: string }) | null;
-        if (!userWithPassword || !userWithPassword.password) {
-            return false;
-        }
-        return await bcrypt.compare(password, userWithPassword.password);
-    }
-
-    public static async verifyUser(userId: number): Promise<void> {
-        await this.update(userId, { verified_at: new Date().toISOString() });
-    }
-
-    public static async hashPassword(password: string): Promise<string> {
-        return await bcrypt.hash(password, 10);
     }
 }
 

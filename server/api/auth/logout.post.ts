@@ -1,4 +1,4 @@
-import { ApiResponse } from "~~/server/http/ApiResponse";
+import { ApiResponse } from "~~/server/http/utils/ApiResponse";
 import authenticated from "~~/server/http/middleware/authenticated"
 
 export default eventHandler({

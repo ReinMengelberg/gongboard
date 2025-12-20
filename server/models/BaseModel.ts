@@ -2,6 +2,7 @@ import {prisma} from '~~/server/db/prisma'
 
 export abstract class Model {
     protected static modelName: string
+    protected static fillable: string[] = []
     protected static hidden: string[] = []
     private static visibleFields: string[] = []
 
@@ -11,6 +12,25 @@ export abstract class Model {
         return prisma[modelName.charAt(0).toLowerCase() + modelName.slice(1)]
     }
 
+    /**
+     * Filter data to only include fillable fields
+     */
+    protected static filterFillable<T extends Record<string, any>>(data: T): Partial<T> {
+        if (this.fillable.length === 0) {
+            return data;
+        }
+        const result: Partial<T> = {};
+        this.fillable.forEach(field => {
+            if (field in data) {
+                result[field as keyof T] = data[field];
+            }
+        });
+        return result;
+    }
+
+    /**
+     * Remove hidden fields from data
+     */
     protected static removeHidden<T extends Record<string, any>>(data: T): Partial<T> {
         if (this.hidden.length === 0) return data;
 
@@ -45,11 +65,32 @@ export abstract class Model {
         return new QueryBuilder(this.getModel(), this);
     }
 
+    /**
+     * Create a new record with mass assignment protection
+     */
     public static async create<T>(data: any): Promise<T> {
+        const filteredData = this.filterFillable(data);
+        const result = await this.getModel().create({data: filteredData})
+        const processed = this.removeHidden(result) as T;
+        this.resetVisible();
+        return processed;
+    }
+
+    /**
+     * Create a new record without mass assignment protection
+     */
+    public static async forceCreate<T>(data: any): Promise<T> {
         const result = await this.getModel().create({data})
         const processed = this.removeHidden(result) as T;
         this.resetVisible();
         return processed;
+    }
+
+    /**
+     * Fill the model with data (returns filtered data, doesn't save)
+     */
+    public static fill<T extends Record<string, any>>(data: T): Partial<T> {
+        return this.filterFillable(data);
     }
 
     public static async find<T>(id: number | string): Promise<T | null> {
@@ -66,7 +107,21 @@ export abstract class Model {
         return processed;
     }
 
+    /**
+     * Update a record with mass assignment protection
+     */
     public static async update<T>(id: number | string, data: any): Promise<T> {
+        const filteredData = this.filterFillable(data);
+        const result = await this.getModel().update({where: {id}, data: filteredData})
+        const processed = this.removeHidden(result) as T;
+        this.resetVisible();
+        return processed;
+    }
+
+    /**
+     * Update a record without mass assignment protection
+     */
+    public static async forceUpdate<T>(id: number | string, data: any): Promise<T> {
         const result = await this.getModel().update({where: {id}, data})
         const processed = this.removeHidden(result) as T;
         this.resetVisible();
@@ -158,6 +213,28 @@ class QueryBuilder {
 
     async count(): Promise<number> {
         return await this.model.count({ where: this.whereClause });
+    }
+
+    /**
+     * Update all matching records with mass assignment protection
+     */
+    async update(data: any): Promise<void> {
+        // @ts-ignore
+        const filteredData = this.modelClass.filterFillable(data);
+        await this.model.updateMany({
+            where: this.whereClause,
+            data: filteredData
+        });
+    }
+
+    /**
+     * Update all matching records without mass assignment protection
+     */
+    async forceUpdate(data: any): Promise<void> {
+        await this.model.updateMany({
+            where: this.whereClause,
+            data: data
+        });
     }
 
     async paginate<T>(options: {

@@ -15,7 +15,7 @@ import {
 import {Avatar, AvatarImage, AvatarFallback} from "~/components/ui/avatar";
 import {useUserStore} from "@/stores/UserStore";
 import {useAuthStore} from "~/stores/AuthStore";
-import type {User} from "~~/types/models/user";
+import type {User} from "~~/server/models/User";
 import ConfirmationDialog from "@/components/utils/dialog/ConfirmationDialog.vue";
 import DeleteDialog from "@/components/utils/dialog/DeleteDialog.vue";
 import EmptyState from "~/components/utils/EmptyState.vue";

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ApiResponse } from "~~/server/http/ApiResponse";
+import { ApiResponse } from "~~/server/http/utils/ApiResponse";
 import { User } from "~~/server/models/User";
 import admin from "~~/server/http/middleware/admin";
 
@@ -16,16 +16,12 @@ export default eventHandler({
     const { name, email, password, admin: isAdmin } = await readValidatedBody(event, bodySchema.parse)
 
     try {
-      // Check if user already exists
-      const existingUser = await User.findByEmail(email)
+      const existingUser = await User.where({ email }).first()
       if (existingUser) {
         return ApiResponse.error(409, 'A user with the provided email already exists.')
       }
 
-      // Hash password using Laravel-style method
-      const hashedPassword = await User.hashPassword(password)
-
-      // Create user using Laravel-style method
+      const hashedPassword = await Hash.make(password)
       const user = await User.create({
         name,
         email,

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ApiResponse } from "~~/server/http/ApiResponse";
+import { ApiResponse } from "~~/server/http/utils/ApiResponse";
 import { User } from "~~/server/models/User";
 import { Auth } from "~~/server/utils/Auth";
 import authenticated from "~~/server/http/middleware/authenticated";
@@ -28,15 +28,13 @@ export default eventHandler({
         const { password } = await readValidatedBody(event, bodySchema.parse)
 
         // Verify password against the authenticated user
-        const isValidPassword = await Auth.validatePassword(event, password)
+        const isValidPassword = await Auth.validatePassword(password)
         if (!isValidPassword) {
             return ApiResponse.error(401, 'Invalid password')
         }
 
         // Authorization: admin can delete any; non-admin only self
-        const isAdmin = await Auth.isAdmin(event)
-        const isSelf = auth.id === id
-        if (!isAdmin && !isSelf) {
+        if (!auth.isAdmin() && !(auth.id === id)) {
             return ApiResponse.error(403, 'Forbidden')
         }
 

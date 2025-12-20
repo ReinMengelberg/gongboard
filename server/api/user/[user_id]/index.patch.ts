@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ApiResponse } from "~~/server/http/ApiResponse";
+import { ApiResponse } from "~~/server/http/utils/ApiResponse";
 import { User } from "~~/server/models/User";
 import authenticated from "~~/server/http/middleware/authenticated";
 
@@ -57,7 +57,7 @@ export default eventHandler({
                 return ApiResponse.error(400, 'New passwords do not match')
             }
             // Hash password using Laravel-style method
-            data.password = await User.hashPassword(body.new_password)
+            data.password = await Hash.make(body.new_password)
         }
 
         // Remove transient fields so they are not persisted

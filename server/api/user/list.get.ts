@@ -1,4 +1,4 @@
-import { ApiResponse } from "~~/server/http/ApiResponse";
+import { ApiResponse } from "~~/server/http/utils/ApiResponse";
 import admin from "~~/server/http/middleware/admin";
 import { User } from "~~/server/models/User";
 

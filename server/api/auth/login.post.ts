@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { ApiResponse } from "~~/server/http/ApiResponse";
+import { ApiResponse } from "~~/server/http/utils/ApiResponse";
 import { User } from "~~/server/models/User";
 import unauthenticated from "~~/server/http/middleware/unauthenticated";
 
@@ -14,7 +14,7 @@ export default eventHandler({
         const { email, password } = await readValidatedBody(event, bodySchema.parse)
 
         // Use the Laravel-style authenticate method
-        const user = await User.authenticate(email, password)
+        const user = await Auth.challenge(email, password)
 
         if (!user) {
             return ApiResponse.error(401, 'Invalid credentials')
@@ -22,15 +22,7 @@ export default eventHandler({
 
         // Establish a session with Auth utils
         await setUserSession(event, {
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                admin: user.admin,
-                verified_at: user.verified_at,
-                created_at: user.created_at,
-                updated_at: user.updated_at,
-            },
+            user: user,
             extendedAt: Date.now(),
         })
 
