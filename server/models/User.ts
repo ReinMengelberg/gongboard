@@ -2,11 +2,11 @@ import { Model } from "~~/server/models/BaseModel";
 import { HasMedia } from "~~/server/traits/HasMedia";
 import type {H3Event} from "h3";
 import type { MediaCollection } from "~~/server/traits/HasMedia";
-import {Hash} from "~~/server/utils/Hash";
 import {Lost} from "~~/server/models/Lost";
 import {Lead} from "~~/server/models/Lead";
 import {Meeting} from "~~/server/models/Meeting";
 import {Sale} from "~~/server/models/Sale";
+import UserPolicy from "~~/server/policies/UserPolicy";
 
 export interface User {
     id: number;
@@ -32,6 +32,7 @@ const ModelWithTraits = HasMedia(Model);
 
 export class User extends ModelWithTraits {
     protected static modelName = "User";
+    protected static policy = UserPolicy
 
     protected static override fillable = [
         'name',
@@ -79,6 +80,20 @@ export class User extends ModelWithTraits {
         return this.with({ meetings: true }).first({ id: this.id });
     }
 
+    /**
+     * Authorization
+     */
+    public can(permission: string, model: typeof Model): boolean {
+        const policy = model.getPolicy();
+        if (!policy) {
+            throw new Error(`No policy found for model ${model.name}`);
+        }
+        const policyInstance = new policy();
+        if (typeof policyInstance[permission] !== 'function') {
+            throw new Error(`Permission method '${permission}' not found in policy for ${model.name}`);
+        }
+        return policyInstance[permission](this);
+    }
 
     /**
      * Media

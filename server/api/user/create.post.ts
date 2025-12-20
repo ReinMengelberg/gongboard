@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { ApiResponse } from "~~/server/http/utils/ApiResponse";
 import { User } from "~~/server/models/User";
+import authenticated from "~~/server/http/middleware/authenticated";
 
 const bodySchema = z.object({
   name: z.string().min(1),
@@ -10,9 +11,9 @@ const bodySchema = z.object({
 })
 
 export default eventHandler({
-  onRequest: [admin],
+  onRequest: [authenticated],
   handler: async (event) => {
-    const { name, email, password, admin: isAdmin } = await readValidatedBody(event, bodySchema.parse)
+    const { name, email, password, admin } = await readValidatedBody(event, bodySchema.parse)
 
     try {
       const existingUser = await User.where({ email }).first()
@@ -25,7 +26,7 @@ export default eventHandler({
         name,
         email,
         password: hashedPassword,
-        admin: isAdmin ?? false,
+        admin: admin,
       })
 
       return ApiResponse.success(user, 'User created', 201)

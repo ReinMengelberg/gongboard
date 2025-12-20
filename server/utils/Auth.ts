@@ -42,7 +42,7 @@ export class Auth {
      * Check if the user is authenticated
      */
     static async check(event: H3Event): Promise<boolean> {
-        const user = await this.user(event)
-        return user !== null
+        const session = await getUserSession(event)
+        return session.user !== null
     }
 }

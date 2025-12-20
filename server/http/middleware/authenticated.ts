@@ -1,5 +1,6 @@
 import {defineEventHandler, setResponseStatus} from 'h3'
 import {ApiResponse} from '~~/server/http/utils/ApiResponse'
+import {Auth} from '~~/server/utils/Auth'
 
 export default defineEventHandler(async (event) => {
     const path = getRequestURL(event).pathname
@@ -8,9 +9,9 @@ export default defineEventHandler(async (event) => {
         return
     }
 
-    const session = await getUserSession(event)
+    const isAuthenticated = await Auth.check(event)
 
-    if (!session?.user) {
+    if (!isAuthenticated) {
         setResponseStatus(event, 401)
         return ApiResponse.error(401, 'Unauthenticated')
     }

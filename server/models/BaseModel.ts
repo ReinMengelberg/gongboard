@@ -2,6 +2,7 @@ import {prisma} from '~~/server/db/prisma'
 
 export abstract class Model {
     protected static modelName: string
+    protected static policy?: new () => any
     protected static fillable: string[] = []
     protected static hidden: string[] = []
     private static visibleFields: string[] = []
@@ -10,6 +11,10 @@ export abstract class Model {
         const modelName = this.modelName
         // @ts-ignore - Dynamic model access
         return prisma[modelName.charAt(0).toLowerCase() + modelName.slice(1)]
+    }
+
+    public static getPolicy(): (new () => any) | null {
+        return this.policy || null;
     }
 
     /**
@@ -33,14 +38,10 @@ export abstract class Model {
      */
     protected static removeHidden<T extends Record<string, any>>(data: T): Partial<T> {
         if (this.hidden.length === 0) return data;
-
-        // Check if there are fields that should be made visible
         const fieldsToHide = this.visibleFields.length > 0
             ? this.hidden.filter(field => !this.visibleFields.includes(field))
             : this.hidden;
-
         if (fieldsToHide.length === 0) return data;
-
         const result = { ...data };
         fieldsToHide.forEach(field => {
             delete result[field];
