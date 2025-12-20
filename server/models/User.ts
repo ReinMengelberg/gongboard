@@ -87,13 +87,11 @@ export class User extends HasMedia(Model) {
                 field: 'avatar',
                 accept: ['image/*'],
                 maxSize: 10,
-                singleFile: true
             },
             {
                 field: 'sound',
                 accept: ['mp3'],
                 maxSize: 10,
-                singleFile: false
             }
         ]
     }

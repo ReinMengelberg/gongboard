@@ -1,39 +1,45 @@
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+
 export interface MediaCollection {
     field: string;
     accept: string[];
     maxSize: number;
-    singleFile?: boolean; // If true, only one file allowed
 }
 
-// Simplified mixin approach that works with abstract classes
+// Initialize S3 client (can be S3 or R2)
+const getS3Client = () => {
+    const config = useRuntimeConfig()
+    return new S3Client({
+        region: config.s3Region || 'auto',
+        endpoint: config.s3Endpoint, // For R2: https://<account-id>.r2.cloudflarestorage.com
+        credentials: {
+            accessKeyId: config.s3AccessKeyId,
+            secretAccessKey: config.s3SecretAccessKey,
+        },
+    })
+}
+
 export function HasMedia<T extends abstract new (...args: any[]) => any>(Base: T) {
     abstract class MediaMixin extends Base {
-        // Override this in your model to define media fields
         static mediaCollections(): MediaCollection[] {
             return [];
         }
 
-        // Get the model name for storage paths
         static getModelName(): string {
             return this.name.toLowerCase();
         }
 
-        static getMediaUrls(record: any, field: string): string[] {
+        static getMediaPath(record: any, field: string): string | null {
             const collection = this.mediaCollections().find(f => f.field === field);
             if (!collection) {
                 throw new Error(`Media collection '${field}' not configured`);
             }
 
             const value = record[field];
-            if (!value) return [];
+            if (!value) return null;
 
-            // Handle both string arrays and single strings (legacy support)
-            return Array.isArray(value) ? value : [value];
-        }
-
-        static getMediaUrl(record: any, field: string): string | null {
-            const urls = this.getMediaUrls(record, field);
-            return urls.length > 0 ? urls[0] : null;
+            return typeof value === 'string' ? value : null;
         }
 
         static getStorageKey(id: number | string, field: string, filename: string): string {
@@ -41,11 +47,45 @@ export function HasMedia<T extends abstract new (...args: any[]) => any>(Base: T
             return `media/${modelName}/${id}/${field}/${filename}`;
         }
 
+        /**
+         * Generate a signed URL for private media access
+         * @param mediaPath - The storage key/path of the media
+         * @param expiresIn - Expiration time in seconds (default: 1 hour)
+         */
+        static async getSignedMediaUrl(mediaPath: string, expiresIn: number = 3600): Promise<string> {
+            if (!mediaPath) {
+                throw new Error('Media path is required');
+            }
+
+            const config = useRuntimeConfig()
+            const s3Client = getS3Client()
+
+            const storageKey = mediaPath.startsWith('/') ? mediaPath.substring(1) : mediaPath
+
+            const command = new GetObjectCommand({
+                Bucket: config.s3Bucket,
+                Key: storageKey,
+            })
+
+            return await getSignedUrl(s3Client, command, { expiresIn })
+        }
+
+        /**
+         * Get signed URL for a specific field on a record
+         */
+        static async getSignedUrl(record: any, field: string, expiresIn: number = 3600): Promise<string | null> {
+            const mediaPath = this.getMediaPath(record, field)
+            if (!mediaPath) return null
+
+            return await this.getSignedMediaUrl(mediaPath, expiresIn)
+        }
+
         static async saveMedia(
             id: number | string,
             field: string,
             fileBuffer: Buffer,
-            filename: string
+            filename: string,
+            contentType?: string
         ): Promise<string> {
             const collection = this.mediaCollections().find(f => f.field === field);
             if (!collection) {
@@ -56,6 +96,12 @@ export function HasMedia<T extends abstract new (...args: any[]) => any>(Base: T
             const record = await this.find(id);
             if (!record) {
                 throw new Error(`Record with id ${id} not found`);
+            }
+
+            // Delete existing file if present
+            const existingMedia = this.getMediaPath(record, field);
+            if (existingMedia) {
+                await this.deleteMediaFile(existingMedia);
             }
 
             // Generate unique filename
@@ -66,46 +112,42 @@ export function HasMedia<T extends abstract new (...args: any[]) => any>(Base: T
 
             const storageKey = this.getStorageKey(id, field, uniqueFilename);
 
-            // Save to storage
-            const storage = useStorage('assets');
-            await storage.setItemRaw(storageKey, fileBuffer);
+            // Upload to S3
+            const config = useRuntimeConfig()
+            const s3Client = getS3Client()
 
-            const relativePath = `/${storageKey}`;
+            await s3Client.send(new PutObjectCommand({
+                Bucket: config.s3Bucket,
+                Key: storageKey,
+                Body: fileBuffer,
+                ContentType: contentType,
+            }))
 
-            // Get existing media
-            const existingMedia = this.getMediaUrls(record, field);
+            const relativePath = storageKey;
 
-            let updatedMedia: string[];
-            if (collection.singleFile) {
-                // If single file, delete the old one and replace
-                if (existingMedia.length > 0) {
-                    await this.deleteMediaFile(existingMedia[0]);
-                }
-                updatedMedia = [relativePath];
-            } else {
-                // Add to collection
-                updatedMedia = [...existingMedia, relativePath];
-            }
-
-            // Update database
+            // Update database with storage key
             // @ts-ignore - static methods from BaseModel
-            await this.update(id, { [field]: updatedMedia });
+            await this.update(id, { [field]: relativePath });
 
             return relativePath;
         }
 
         static async deleteMediaFile(mediaPath: string): Promise<void> {
             const storageKey = mediaPath.startsWith('/') ? mediaPath.substring(1) : mediaPath;
-            const storage = useStorage('assets');
+            const config = useRuntimeConfig()
+            const s3Client = getS3Client()
 
             try {
-                await storage.removeItem(storageKey);
+                await s3Client.send(new DeleteObjectCommand({
+                    Bucket: config.s3Bucket,
+                    Key: storageKey,
+                }))
             } catch (error) {
                 console.warn(`Failed to delete file: ${storageKey}`, error);
             }
         }
 
-        static async deleteMedia(id: number | string, field: string, mediaPath?: string): Promise<void> {
+        static async deleteMedia(id: number | string, field: string): Promise<void> {
             // @ts-ignore - static methods from BaseModel
             const record = await this.find(id);
             if (!record) {
@@ -117,38 +159,24 @@ export function HasMedia<T extends abstract new (...args: any[]) => any>(Base: T
                 throw new Error(`Media collection '${field}' not configured`);
             }
 
-            const existingMedia = this.getMediaUrls(record, field);
+            const existingMedia = this.getMediaPath(record, field);
 
-            if (mediaPath) {
-                // Delete specific file from collection
-                await this.deleteMediaFile(mediaPath);
-
-                const updatedMedia = existingMedia.filter(path => path !== mediaPath);
-
-                // @ts-ignore - static methods from BaseModel
-                await this.update(id, { [field]: updatedMedia });
-            } else {
-                // Delete all files in collection
-                for (const path of existingMedia) {
-                    await this.deleteMediaFile(path);
-                }
-
-                // Clear database field
-                // @ts-ignore - static methods from BaseModel
-                await this.update(id, { [field]: [] });
+            if (existingMedia) {
+                await this.deleteMediaFile(existingMedia);
             }
+
+            // @ts-ignore - static methods from BaseModel
+            await this.update(id, { [field]: null });
         }
 
         static async replaceMedia(
             id: number | string,
             field: string,
             fileBuffer: Buffer,
-            filename: string
+            filename: string,
+            contentType?: string
         ): Promise<string> {
-            // Delete all media in field first
-            await this.deleteMedia(id, field);
-            // Save new media
-            return await this.saveMedia(id, field, fileBuffer, filename);
+            return await this.saveMedia(id, field, fileBuffer, filename, contentType);
         }
 
         static async getMediaBuffer(mediaPath: string): Promise<Buffer | null> {
@@ -157,11 +185,23 @@ export function HasMedia<T extends abstract new (...args: any[]) => any>(Base: T
             }
 
             const storageKey = mediaPath.startsWith('/') ? mediaPath.substring(1) : mediaPath;
-            const storage = useStorage('assets');
+            const config = useRuntimeConfig()
+            const s3Client = getS3Client()
 
             try {
-                const data = await storage.getItemRaw(storageKey);
-                return data as Buffer;
+                const response = await s3Client.send(new GetObjectCommand({
+                    Bucket: config.s3Bucket,
+                    Key: storageKey,
+                }))
+
+                const stream = response.Body as any
+                const chunks: Buffer[] = []
+
+                for await (const chunk of stream) {
+                    chunks.push(chunk)
+                }
+
+                return Buffer.concat(chunks)
             } catch (error) {
                 console.warn(`Failed to get file: ${storageKey}`, error);
                 return null;

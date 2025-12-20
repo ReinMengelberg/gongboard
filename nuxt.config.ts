@@ -13,7 +13,13 @@ export default defineNuxtConfig({
             tailwindcss(),
         ],
     },
-
+    runtimeConfig: {
+        s3Region: process.env.S3_REGION || 'us-east-1',
+        s3Endpoint: process.env.S3_ENDPOINT, // For R2 or custom S3 endpoint
+        s3Bucket: process.env.S3_BUCKET,
+        s3AccessKeyId: process.env.S3_ACCESS_KEY_ID,
+        s3SecretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    },
     routeRules: {
         '/': { redirect: '/app/home' },
     },
