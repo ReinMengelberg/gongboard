@@ -1,4 +1,4 @@
-import { prisma } from '~~/server/db/prisma'
+import { prisma } from '~~/prisma/client'
 
 export abstract class Model {
     protected static modelName: string

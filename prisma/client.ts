@@ -1,4 +1,4 @@
-import { PrismaClient } from '~~/prisma/generated/client'
+import { PrismaClient } from './generated/client'
 import { PrismaMariaDb } from '@prisma/adapter-mariadb'
 
 const prismaClientSingleton = () => {
