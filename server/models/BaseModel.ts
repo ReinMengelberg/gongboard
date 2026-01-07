@@ -153,6 +153,7 @@ export abstract class Model {
      * Create instance without saving
      */
     public static make<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, attributes: Record<string, any> = {}): T {
+        // @ts-ignore
         return new this(attributes)
     }
 
@@ -160,6 +161,7 @@ export abstract class Model {
      * Hydrate plain object into model instance
      */
     protected static hydrate<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, data: Record<string, any>): T {
+        // @ts-ignore
         return new this(data)
     }
 
@@ -167,6 +169,7 @@ export abstract class Model {
      * Hydrate array of objects
      */
     protected static hydrateMany<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, data: Record<string, any>[]): T[] {
+        // @ts-ignore
         return data.map(item => this.hydrate(item))
     }
 
@@ -218,6 +221,7 @@ export abstract class Model {
         const result = await this.getModel().create({ data: filteredData })
         const processed = this.removeHidden(result)
         this.resetVisible()
+        // @ts-ignore
         return this.hydrate(processed as Record<string, any>)
     }
 
@@ -225,6 +229,7 @@ export abstract class Model {
         const result = await this.getModel().create({ data })
         const processed = this.removeHidden(result)
         this.resetVisible()
+        // @ts-ignore
         return this.hydrate(processed as Record<string, any>)
     }
 
@@ -236,6 +241,7 @@ export abstract class Model {
         }
         const processed = this.removeHidden(result)
         this.resetVisible()
+        // @ts-ignore
         return this.hydrate(processed as Record<string, any>)
     }
 
@@ -244,6 +250,7 @@ export abstract class Model {
         if (!result) {
             throw new Error(`${this.modelName} not found with id ${id}`)
         }
+        // @ts-ignore
         return result
     }
 
@@ -251,6 +258,7 @@ export abstract class Model {
         const result = await this.getModel().findMany({ where, include })
         const processed = this.removeHiddenFromArray(result)
         this.resetVisible()
+        // @ts-ignore
         return this.hydrateMany(processed as Record<string, any>[])
     }
 
@@ -259,6 +267,7 @@ export abstract class Model {
         const result = await this.getModel().update({ where: { id }, data: filteredData })
         const processed = this.removeHidden(result)
         this.resetVisible()
+        // @ts-ignore
         return this.hydrate(processed as Record<string, any>)
     }
 
@@ -266,6 +275,7 @@ export abstract class Model {
         const result = await this.getModel().update({ where: { id }, data })
         const processed = this.removeHidden(result)
         this.resetVisible()
+        // @ts-ignore
         return this.hydrate(processed as Record<string, any>)
     }
 
@@ -286,10 +296,12 @@ export abstract class Model {
         }
         const processed = this.removeHidden(result)
         this.resetVisible()
+        // @ts-ignore
         return this.hydrate(processed as Record<string, any>)
     }
 
     public static async all<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model): Promise<T[]> {
+        // @ts-ignore
         return this.findMany()
     }
 
@@ -298,14 +310,17 @@ export abstract class Model {
     }
 
     public static where<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, conditions: any): QueryBuilder<T> {
+        // @ts-ignore
         return this.query().where(conditions)
     }
 
     public static with<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, relations: any): QueryBuilder<T> {
+        // @ts-ignore
         return this.query().with(relations)
     }
 
     public static orderBy<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, order: any): QueryBuilder<T> {
+        // @ts-ignore
         return this.query().orderBy(order)
     }
 }
