@@ -1,4 +1,5 @@
-import { prisma } from '~~/prisma/client'
+import {prisma} from '~~/prisma/client'
+import QueryBuilder from "~~/server/models/utils/QueryBuilder";
 
 export abstract class Model {
     protected static modelName: string
@@ -212,80 +213,12 @@ export abstract class Model {
         return this
     }
 
+    /**
+     * Query Methods
+     */
+
     public static query<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model): QueryBuilder<T> {
         return new QueryBuilder(this.getModel(), this)
-    }
-
-    public static async create<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, data: any): Promise<T> {
-        const filteredData = this.filterFillable(data)
-        const result = await this.getModel().create({ data: filteredData })
-        const processed = this.removeHidden(result)
-        this.resetVisible()
-        // @ts-ignore
-        return this.hydrate(processed as Record<string, any>)
-    }
-
-    public static async forceCreate<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, data: any): Promise<T> {
-        const result = await this.getModel().create({ data })
-        const processed = this.removeHidden(result)
-        this.resetVisible()
-        // @ts-ignore
-        return this.hydrate(processed as Record<string, any>)
-    }
-
-    public static async find<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, id: number | string): Promise<T | null> {
-        const result = await this.getModel().findUnique({ where: { id } })
-        if (!result) {
-            this.resetVisible()
-            return null
-        }
-        const processed = this.removeHidden(result)
-        this.resetVisible()
-        // @ts-ignore
-        return this.hydrate(processed as Record<string, any>)
-    }
-
-    public static async findOrFail<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, id: number | string): Promise<T> {
-        const result = await this.find(id)
-        if (!result) {
-            throw new Error(`${this.modelName} not found with id ${id}`)
-        }
-        // @ts-ignore
-        return result
-    }
-
-    public static async findMany<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, where?: any, include?: any): Promise<T[]> {
-        const result = await this.getModel().findMany({ where, include })
-        const processed = this.removeHiddenFromArray(result)
-        this.resetVisible()
-        // @ts-ignore
-        return this.hydrateMany(processed as Record<string, any>[])
-    }
-
-    public static async update<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, id: number | string, data: any): Promise<T> {
-        const filteredData = this.filterFillable(data)
-        const result = await this.getModel().update({ where: { id }, data: filteredData })
-        const processed = this.removeHidden(result)
-        this.resetVisible()
-        // @ts-ignore
-        return this.hydrate(processed as Record<string, any>)
-    }
-
-    public static async forceUpdate<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, id: number | string, data: any): Promise<T> {
-        const result = await this.getModel().update({ where: { id }, data })
-        const processed = this.removeHidden(result)
-        this.resetVisible()
-        // @ts-ignore
-        return this.hydrate(processed as Record<string, any>)
-    }
-
-    public static async deleteById(id: number | string): Promise<void> {
-        await this.getModel().delete({ where: { id } })
-    }
-
-    // Keep the old delete method name for backwards compatibility
-    public static async delete(id: number | string): Promise<void> {
-        await this.deleteById(id)
     }
 
     public static async first<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, where?: any): Promise<T | null> {
@@ -323,137 +256,168 @@ export abstract class Model {
         // @ts-ignore
         return this.query().orderBy(order)
     }
-}
 
-class QueryBuilder<T> {
-    private model: any
-    private modelClass: typeof Model
-    private whereClause: any = {}
-    private orderByClause: any = undefined
-    private includeClause: any = undefined
-
-    constructor(model: any, modelClass: typeof Model) {
-        this.model = model
-        this.modelClass = modelClass
-    }
-
-    where(conditions: any): this {
-        this.whereClause = { ...this.whereClause, ...conditions }
-        return this
-    }
-
-    orWhere(conditions: any): this {
-        if (!this.whereClause.OR) {
-            this.whereClause.OR = []
+    public static async find<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, id: number | string): Promise<T | null> {
+        const result = await this.getModel().findUnique({ where: { id } })
+        if (!result) {
+            this.resetVisible()
+            return null
         }
-        this.whereClause.OR.push(conditions)
-        return this
-    }
-
-    orderBy(order: any): this {
-        this.orderByClause = order
-        return this
-    }
-
-    with(relations: any): this {
-        this.includeClause = relations
-        return this
-    }
-
-    async get(): Promise<T[]> {
-        const result = await this.model.findMany({
-            where: this.whereClause,
-            orderBy: this.orderByClause,
-            include: this.includeClause
-        })
+        const processed = this.removeHidden(result)
+        this.resetVisible()
         // @ts-ignore
-        const processed = this.modelClass.removeHiddenFromArray(result)
-        // @ts-ignore
-        return this.modelClass.hydrateMany(processed)
+        return this.hydrate(processed as Record<string, any>)
     }
 
-    async first(): Promise<T | null> {
-        const result = await this.model.findFirst({
-            where: this.whereClause,
-            orderBy: this.orderByClause,
-            include: this.includeClause
-        })
-        if (!result) return null
+    public static async findOrFail<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, id: number | string): Promise<T> {
+        const result = await this.find(id)
+        if (!result) {
+            throw new Error(`${this.modelName} not found with id ${id}`)
+        }
         // @ts-ignore
-        const processed = this.modelClass.removeHidden(result)
-        // @ts-ignore
-        return this.modelClass.hydrate(processed)
+        return result
     }
 
-    async count(): Promise<number> {
-        return await this.model.count({ where: this.whereClause })
+    public static async findMany<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, where?: any, include?: any): Promise<T[]> {
+        const result = await this.getModel().findMany({ where, include })
+        const processed = this.removeHiddenFromArray(result)
+        this.resetVisible()
+        // @ts-ignore
+        return this.hydrateMany(processed as Record<string, any>[])
     }
 
-    async update(data: any): Promise<void> {
+    /**
+     * Create Methods
+     */
+
+    public static async create<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, data: any): Promise<T> {
+        const filteredData = this.filterFillable(data)
+        const result = await this.getModel().create({ data: filteredData })
+        const processed = this.removeHidden(result)
+        this.resetVisible()
         // @ts-ignore
-        const filteredData = this.modelClass.filterFillable(data)
-        await this.model.updateMany({
-            where: this.whereClause,
+        return this.hydrate(processed as Record<string, any>)
+    }
+
+    static async createOrUpdate<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, uniqueFields: Partial<Record<string, any>>, data: Partial<Record<string, any>>): Promise<T> {
+        const existing = await this.query<T>().where(uniqueFields).first();
+        if (existing) {
+            return await (existing as any).update(data) as T;
+        }
+        // @ts-ignore
+        return await this.create({ ...uniqueFields, ...data });
+    }
+
+    public static async forceCreate<T extends Model>(this: { new(attributes?: Record<string, any>): T } & typeof Model, data: any): Promise<T> {
+        const result = await this.getModel().create({ data })
+        const processed = this.removeHidden(result)
+        this.resetVisible()
+        // @ts-ignore
+        return this.hydrate(processed as Record<string, any>)
+    }
+
+    /**
+     * Update Methods
+     */
+
+    public async update(data: Partial<this>): Promise<this> {
+        const ctor = this.constructor as typeof Model
+
+        if (!this._attributes.id) {
+            throw new Error('Cannot update model without an id')
+        }
+
+        // Merge data into attributes
+        Object.assign(this._attributes, data)
+
+        const filteredData = ctor.filterFillable(this._attributes)
+        const result = await ctor.getModel().update({
+            where: { id: this._attributes.id },
             data: filteredData
         })
+        this._attributes = { ...result }
+        this._original = { ...result }
+        this.syncAttributes()
+
+        return this
     }
 
-    async forceUpdate(data: any): Promise<void> {
-        await this.model.updateMany({
-            where: this.whereClause,
-            data
-        })
-    }
+    public async forceUpdate(data: Partial<this>): Promise<this> {
+        const ctor = this.constructor as typeof Model
 
-    async delete(): Promise<void> {
-        await this.model.deleteMany({
-            where: this.whereClause
-        })
-    }
-
-    async paginate(options: {
-        page?: number
-        perPage?: number
-    } = {}): Promise<{
-        data: T[]
-        current_page: number
-        last_page: number
-        per_page: number
-        total: number
-        from: number | null
-        to: number | null
-    }> {
-        const page = Math.max(options.page || 1, 1)
-        const perPage = Math.min(Math.max(options.perPage || 25, 1), 100)
-        const skip = (page - 1) * perPage
-
-        const [data, total] = await Promise.all([
-            this.model.findMany({
-                where: this.whereClause,
-                orderBy: this.orderByClause,
-                include: this.includeClause,
-                skip,
-                take: perPage
-            }),
-            this.count()
-        ])
-
-        const lastPage = Math.max(1, Math.ceil(total / perPage))
-        const from = total === 0 ? null : skip + 1
-        const to = total === 0 ? null : Math.min(skip + data.length, total)
-
-        // @ts-ignore
-        const processed = this.modelClass.removeHiddenFromArray(data)
-
-        return {
-            // @ts-ignore
-            data: this.modelClass.hydrateMany(processed),
-            current_page: page,
-            last_page: lastPage,
-            per_page: perPage,
-            from,
-            to,
-            total
+        if (!this._attributes.id) {
+            throw new Error('Cannot update model without an id')
         }
+
+        // Merge data into attributes
+        Object.assign(this._attributes, data)
+
+        const result = await ctor.getModel().update({
+            where: { id: this._attributes.id },
+            data: this._attributes
+        })
+        this._attributes = { ...result }
+        this._original = { ...result }
+        this.syncAttributes()
+
+        return this
+    }
+
+    /**
+     * Delete Methods
+     */
+
+    public static async delete(id: number | string): Promise<void> {
+        await this.getModel().delete({ where: { id } })
     }
 }
+
+/**
+ * Parse filter[field]=value query parameters
+ * Returns an object with field names as keys and their values
+ */
+export function parseFilters(query: Record<string, any>): Record<string, string[]> {
+    const filters: Record<string, string[]> = {}
+    const filterRegex = /^filter\[([^\]]+)\]$/
+
+    for (const key of Object.keys(query)) {
+        const match = key.match(filterRegex)
+        if (match) {
+            const fieldName = match[1]
+            const value = query[key] as string
+            // Split comma-separated values into array
+            filters[fieldName] = value.split(',').map(v => v.trim()).filter(v => v !== '')
+        }
+    }
+
+    return filters
+}
+
+/**
+ * Parse sort parameter
+ * Format: ?sort=field for ascending, ?sort=-field for descending
+ * Multiple sorts: ?sort=field1,-field2
+ * Returns array of { field: string, direction: 'asc' | 'desc' }
+ */
+export function parseSort(sortParam: string | undefined): Array<{ field: string; direction: 'asc' | 'desc' }> {
+    if (!sortParam) return []
+
+    return sortParam.split(',').map(s => s.trim()).filter(s => s !== '').map(sort => {
+        if (sort.startsWith('-')) {
+            return { field: sort.slice(1), direction: 'desc' as const }
+        }
+        return { field: sort, direction: 'asc' as const }
+    })
+}
+
+/**
+ * Convert parsed sort array to Prisma orderBy format
+ */
+export function sortToPrismaOrderBy(sorts: Array<{ field: string; direction: 'asc' | 'desc' }>): Record<string, 'asc' | 'desc'> | Array<Record<string, 'asc' | 'desc'>> | undefined {
+    if (sorts.length === 0) return undefined
+    if (sorts.length === 1) {
+        return { [sorts[0].field]: sorts[0].direction }
+    }
+    return sorts.map(s => ({ [s.field]: s.direction }))
+}
+

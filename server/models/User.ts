@@ -1,4 +1,4 @@
-import { Model } from "~~/server/models/BaseModel"
+import { Model } from "~~/server/models/utils/BaseModel"
 import type { User as PrismaUser } from '@prisma/client'
 import { HasMedia } from "~~/server/traits/HasMedia"
 import type { H3Event } from "h3"
