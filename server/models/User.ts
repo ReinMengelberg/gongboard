@@ -49,13 +49,6 @@ export class User extends HasMedia(Model) {
         await this.save()
     }
 
-    /**
-     * Static method to verify a user by ID
-     */
-    public static async verifyUser(userId: number): Promise<void> {
-        await this.update(userId, { verified_at: new Date().toISOString() })
-    }
-
     static async isAdmin(event: H3Event): Promise<boolean> {
         const session = await getUserSession(event)
         const sessionUser = session?.user as { admin?: boolean } | undefined

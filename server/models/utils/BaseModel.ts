@@ -208,7 +208,7 @@ export abstract class Model {
         this.visibleFields = []
     }
 
-    public static makeVisible(fields: string | string[]): typeof Model {
+    public static makeVisible<T extends typeof Model>(this: T, fields: string | string[]): T {
         this.visibleFields = Array.isArray(fields) ? fields : [fields]
         return this
     }
